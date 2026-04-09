@@ -1,0 +1,4 @@
+interface:
+  display_name: "Notify"
+  short_description: "Progress notification workflow and sender"
+  default_prompt: "Use $notify to send concise progress notifications for this work session."

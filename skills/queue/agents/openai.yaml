@@ -1,0 +1,5 @@
+interface:
+  display_name: "Queue"
+  short_description: "Axolync queue inspection and handoff conventions"
+  default_prompt: "Use $queue to inspect or update the Axolync root queue and emit stable cross-workspace task handoff ids."
+

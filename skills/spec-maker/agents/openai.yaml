@@ -1,0 +1,5 @@
+interface:
+  display_name: "Spec Maker"
+  short_description: "Generate Kiro-style spec prompts from project seeds"
+  default_prompt: "Use $spec-maker to generate a Kiro-style spec prompt file from the given seed without executing it."
+

@@ -1,0 +1,5 @@
+interface:
+  display_name: "Task ID"
+  short_description: "Stable Axolync task ids for queue and agent handoff"
+  default_prompt: "Use $task-id to convert queued or markdown-backed Axolync tasks into stable cross-workspace task ids."
+

@@ -1,0 +1,4 @@
+interface:
+  display_name: "TACTIC"
+  short_description: "Queue-oriented task execution workflow"
+  default_prompt: "Use $tactic to execute the current multi-task queue with the right autonomy mode."
