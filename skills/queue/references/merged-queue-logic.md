@@ -1,6 +1,6 @@
 # Merged Queue Logic
 
-This note merges the earlier `tmp/queue_logic` summaries into one Axolync-local reference.
+This note merges the local Axolync queue summaries into one reusable reference.
 
 ## Core Meaning
 

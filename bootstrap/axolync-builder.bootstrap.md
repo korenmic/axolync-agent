@@ -14,6 +14,23 @@ Bring a new agent to a useful working level quickly by:
 - bootstrapping the workspace in the fastest safe way
 - avoiding broad unfocused reading
 
+## Bootstrap Mirror Maintenance Rule
+
+The docs mirrored into `axolync-agent/bootstrap/` are not archival copies.
+They are part of the current Axolync agent bootstrap surface and must stay in sync with the repos they summarize.
+
+If any repo-defining core thing changes, update the relevant `axolync-agent` bootstrap docs in the same change or immediately adjacent follow-up:
+
+- repo role or ownership boundaries
+- workspace/bootstrap workflow
+- seed/spec/task execution norms
+- queue/task-id conventions
+- vocabulary that new agents need in order to interpret the repos correctly
+- critical authority reading order
+
+Do not let `axolync-agent` drift into stale orientation material.
+If the source repo meaning changes, the mirrored bootstrap explanation here must change with it.
+
 ## Authority Order
 
 When docs disagree, prefer this order unless the active task explicitly says otherwise:

@@ -92,3 +92,6 @@ Use it for:
 - sharing task ids across workspaces
 - keeping bootstrap/agent docs in one place
 
+Maintenance rule:
+
+- if any repo's core role, authority boundaries, bootstrap workflow, or critical vocabulary changes, the mirrored summaries in this repo must be updated too

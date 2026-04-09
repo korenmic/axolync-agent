@@ -22,3 +22,8 @@ This is the shortest self-contained reading order for a new Axolync agent.
 - exact code seams touched by the task
 
 Do not start by reading the whole tree.
+
+## Maintenance Rule
+
+If any repo-defining bootstrap truth changes in the real repos, update the mirrored `axolync-agent/bootstrap/` docs too.
+This reading pack is supposed to remain current orientation material, not stale historical notes.

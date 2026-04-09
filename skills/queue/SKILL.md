@@ -18,15 +18,11 @@ Use this skill for the Axolync workspace queue at:
 
 ## Queue Logic References
 
-This skill is Axolync-local and also carries forward the earlier queue-logic notes collected under:
-
-- `C:\Users\koren\tmp\queue_logic\`
-
-Use the merged summary in:
+Use the merged Axolync queue summary in:
 
 - [references/merged-queue-logic.md](./references/merged-queue-logic.md)
 
-The raw per-agent notes are also preserved in the same folder for review.
+The review references in this skill folder are local supporting material, not external workspace dependencies.
 
 ## Global Task Id Requirement
 
