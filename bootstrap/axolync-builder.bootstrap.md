@@ -28,6 +28,12 @@ If any repo-defining core thing changes, update the relevant `axolync-agent` boo
 - vocabulary that new agents need in order to interpret the repos correctly
 - critical authority reading order
 
+TACTIC clarification:
+
+- queue and TACTIC execution metadata belong under the top-level workspace `.codex/` tree
+- they do not belong under any individual repo root
+- if an agent is editing `C:\Users\koren\src\Sinq\axolync-browser`, the session state still belongs at `C:\Users\koren\src\Sinq\.codex\tactic\session.json`
+
 Do not let `axolync-agent` drift into stale orientation material.
 If the source repo meaning changes, the mirrored bootstrap explanation here must change with it.
 

@@ -33,7 +33,8 @@ Hard rules:
   - do not surface `cancelled`, `suspended`, or `superseded` seeds/specs in routine summaries unless the user explicitly asks for archived or stale history
 - If persistent tracked workspace state suddenly disappears, downgrades unexpectedly, or looks corrupted, stop immediately. Do not delete, reclone, restore, bootstrap, or “heal” anything autonomously. Report the anomaly and wait for explicit user direction.
 - Notify rule: if local notify config exists, send the final ready notification with the repo notify script; otherwise report that notify is blocked by missing config and do not invent config.
-- If a workspace-local execution queue already exists under `.codex/`, treat it as durable local coordination state rather than keeping the queue only in memory.
+- If a workspace-local execution queue already exists under the workspace root `.codex/`, treat it as durable local coordination state rather than keeping the queue only in memory.
+- Do not create repo-local `TACTIC` metadata such as `<repoRoot>/.codex/tactic/`; session state belongs only at `<workspaceRoot>/.codex/tactic/`.
 
 Read in this exact order:
 1. builder: `README.md`, `bootstrap.md`, `ai.md`, `config/build-presets/README.md`, `vocabulary.md`, `docs/seed-execution-guide.md`

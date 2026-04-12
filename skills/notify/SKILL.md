@@ -16,14 +16,23 @@ Treat the CLI as the transport layer with bot-name prefix support. Compose the m
 Resolve notification settings in this order:
 
 1. Explicit CLI channel argument or bot-name argument
-2. `AXOLYNC_NOTIFY_*` values from the current process or workspace `.env`
-3. `~/bin/notify-config.json`
+2. `AXOLYNC_NOTIFY_*` values from the current process environment
+3. The nearest ancestor `.env` that actually defines the specific notify setting being resolved
+4. `~/bin/notify-config.json`
 
 Recognized settings:
 
 - `AXOLYNC_NOTIFY_BASE_URL`
 - `AXOLYNC_NOTIFY_CHANNEL`
 - `AXOLYNC_NOTIFY_BOT_NAME`
+
+Each setting is resolved independently. A nearer `.env` that does not define `AXOLYNC_NOTIFY_BOT_NAME` must not block a higher ancestor `.env` that does define it.
+
+Example:
+
+- repo `.env` contains only build variables
+- workspace root `.env` contains `AXOLYNC_NOTIFY_BOT_NAME=Sinq4`
+- running `notify` inside the repo should still send as `Sinq4`
 
 Default global config path:
 
@@ -75,7 +84,7 @@ Notes:
 - `taskNumber` and `duration` are compatibility helpers; prefer putting the final session summary into the message itself.
 - The optional `botName` argument overrides env/config/default bot naming for that one notification.
 - For the shortest custom-name override, you may pass `@Name` as the second argument instead of a channel, for example `notify "<message body>" @Sinq2`.
-- The CLI looks upward for the nearest `.env`, so a workspace-level `.env` can provide a default bot name across nested repos.
+- The CLI resolves each notify setting from the nearest ancestor `.env` that actually defines that setting, so a workspace-level `.env` can still provide `AXOLYNC_NOTIFY_BOT_NAME` when a nested repo `.env` exists but does not define notify settings.
 
 ## Default Events
 

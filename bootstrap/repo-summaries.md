@@ -92,6 +92,12 @@ Use it for:
 - sharing task ids across workspaces
 - keeping bootstrap/agent docs in one place
 
+TACTIC/queue reminder:
+
+- the live queue file and `TACTIC` session metadata belong under the workspace root `.codex/` tree
+- they are cross-repo coordination state, not repo-owned tracked files
+- do not create repo-local `.codex/tactic/` metadata folders inside sibling repos
+
 Maintenance rule:
 
 - if any repo's core role, authority boundaries, bootstrap workflow, or critical vocabulary changes, the mirrored summaries in this repo must be updated too

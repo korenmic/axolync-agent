@@ -9,6 +9,10 @@ Use this skill for the Axolync workspace queue at:
 
 - `<workspaceRoot>/.codex/local-task-queue.md`
 
+This queue file is workspace-root coordination state, not repo-owned state.
+Do not create repo-local queue or TACTIC metadata under individual repos.
+When the active task edits `axolync-browser`, `axolync-builder`, or any other sibling repo, keep the queue and `TACTIC` session under the top-level workspace `.codex/` directory only.
+
 ## Core Rules
 
 - Treat `Q-###` ids as local queue row ids only.
