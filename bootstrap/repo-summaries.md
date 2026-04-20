@@ -78,6 +78,20 @@ Read first when you need:
 - package schema questions
 - query compatibility questions
 
+## axolync-songmetadata-plugin
+
+Role:
+
+- SongMetadata lane research authority
+- adapter inventory source for atlas/report
+- future SongMetadata adapter home
+
+Read first when you need:
+
+- SongMetadata adapter catalog truth
+- lane-specific research inventory
+- report/atlas population questions
+
 ## axolync-agent
 
 Role:

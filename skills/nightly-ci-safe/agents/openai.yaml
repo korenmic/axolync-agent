@@ -1,0 +1,4 @@
+interface:
+  display_name: "Nightly CI Safe"
+  short_description: "Guardrails for nightly CI reruns"
+  default_prompt: "Use $nightly-ci-safe to run the post-queue nightly CI pass without repeating the 21-hour failure pattern."

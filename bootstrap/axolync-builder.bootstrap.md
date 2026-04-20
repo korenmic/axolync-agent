@@ -153,6 +153,7 @@ From the builder root:
 ```
 
 This gives a fast latest-commit sibling workspace without cloning full history first.
+The managed sibling set now also includes `axolync-songmetadata-plugin` as the SongMetadata atlas/report adapter-inventory source.
 
 If full history is needed later for one repo:
 

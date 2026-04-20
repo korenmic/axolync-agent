@@ -20,6 +20,9 @@ Hard rules:
   - `axolync-android-wrapper`
   - `axolync-plugins-contract`
   - `axolync-addon-whisper`
+  - `axolync-addon-vibra`
+  - `axolync-addon-lrclib`
+  - `axolync-songmetadata-plugin`
   - `axolync-lyricflow-plugin`
   - `axolync-songsense-plugin`
   - `axolync-syncengine-plugin`
@@ -41,7 +44,7 @@ Read in this exact order:
 2. browser: `README.md`, `docs/state-machine-interaction-matrix.md`, `docs/client-server-policy.md`, `docs/runtime-boundary-review-checklist.md`, `docs/ai-global.md`
 3. contracts: `README.md`, `tools/README.md`, `VERSIONING.md`, `COMPATIBILITY.md`
 4. builder seeds: `docs/project-seeds/20-single-clone-builder-bootstrap-and-redeployment.md`, `31-environment-specific-path-and-host-assumption-audit.md`, `33-builder-build-presets-toml-and-env-demotion.md`, `docs/project-seeds/migration/08-contracts-logical-vs-transport-hardening.md`, `32-migration-08-readiness-hardening-meta-seed.md`
-5. then repo orientation only: android-wrapper `README.md`, whisper `README.md`, lyricflow `README.md`, songsense `README.md`, syncengine `README.md`
+5. then repo orientation only: android-wrapper `README.md`, whisper `README.md`, lyricflow `README.md`, songsense `README.md`, syncengine `README.md`, songmetadata `README.md`
 
 Final output:
 - repo topology
