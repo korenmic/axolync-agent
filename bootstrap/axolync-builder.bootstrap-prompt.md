@@ -22,6 +22,7 @@ Hard rules:
   - `axolync-addon-whisper`
   - `axolync-addon-vibra`
   - `axolync-addon-lrclib`
+  - `axolync-addon-demo-stage1`
   - `axolync-songmetadata-plugin`
   - `axolync-lyricflow-plugin`
   - `axolync-songsense-plugin`

@@ -92,6 +92,20 @@ Read first when you need:
 - lane-specific research inventory
 - report/atlas population questions
 
+## axolync-addon-demo-stage1
+
+Role:
+
+- extracted Stage 1 demo addon repo
+- packaged demo-only addon source of truth
+- home of the shipped demo adapters/assets across the current Stage 1 lanes
+
+Read first when you need:
+
+- demo addon packaging truth
+- Stage 1 demo adapter ownership
+- questions about the bundled demo-only addon contents
+
 ## axolync-agent
 
 Role:
