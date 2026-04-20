@@ -23,6 +23,9 @@ Hard rules:
   - `axolync-addon-vibra`
   - `axolync-addon-lrclib`
   - `axolync-addon-demo-stage1`
+  - `axolync-addon-itunes`
+  - `axolync-addon-spotify`
+  - `axolync-addon-musicbrainz`
   - `axolync-songmetadata-plugin`
   - `axolync-lyricflow-plugin`
   - `axolync-songsense-plugin`

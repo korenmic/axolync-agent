@@ -92,6 +92,42 @@ Read first when you need:
 - lane-specific research inventory
 - report/atlas population questions
 
+## axolync-addon-itunes
+
+Role:
+
+- Apple/iTunes SongMetadata provider addon repo
+- dedicated home for iTunes-oriented SongMetadata adapters
+
+Read first when you need:
+
+- iTunes provider behavior
+- Apple metadata lookup adapter ownership
+
+## axolync-addon-spotify
+
+Role:
+
+- Spotify SongMetadata provider addon repo
+- dedicated home for Spotify-oriented SongMetadata adapters
+
+Read first when you need:
+
+- Spotify provider behavior
+- Spotify metadata lookup/search adapter ownership
+
+## axolync-addon-musicbrainz
+
+Role:
+
+- MusicBrainz SongMetadata provider addon repo
+- dedicated home for MusicBrainz-oriented SongMetadata adapters
+
+Read first when you need:
+
+- MusicBrainz provider behavior
+- MusicBrainz metadata lookup/search adapter ownership
+
 ## axolync-addon-demo-stage1
 
 Role:

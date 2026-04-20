@@ -157,6 +157,9 @@ The managed sibling set now also includes:
 
 - `axolync-addon-demo-stage1` as the extracted Stage 1 demo-addon source repo
 - `axolync-songmetadata-plugin` as the SongMetadata atlas/report adapter-inventory source
+- `axolync-addon-itunes` as the Apple/iTunes SongMetadata provider addon repo
+- `axolync-addon-spotify` as the Spotify SongMetadata provider addon repo
+- `axolync-addon-musicbrainz` as the MusicBrainz SongMetadata provider addon repo
 
 If full history is needed later for one repo:
 
