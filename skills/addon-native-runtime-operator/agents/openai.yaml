@@ -1,0 +1,4 @@
+interface:
+  display_name: "Addon Native Runtime Operator"
+  short_description: "Implement addon-owned native bridge runtime operators"
+  default_prompt: "Use $addon-native-runtime-operator to implement a new addon-owned native bridge runtime operator across builder, browser, and wrapper hosts."
