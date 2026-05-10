@@ -1,0 +1,4 @@
+interface:
+  display_name: "Axolync Build Mirror Handoff"
+  short_description: "Build and mirror Axolync artifacts from Sinq1-local checkouts only"
+  default_prompt: "Use $axolync-build-mirror-handoff to fetch the requested branches locally in Sinq1, run the requested build/report mode, and mirror artifacts to E:."

@@ -102,6 +102,25 @@ Only after the above:
 
 ## Fast Workspace Bootstrap
 
+### Workspace skill discovery
+
+This repo publishes workspace-scoped skills under `axolync-agent/skills-workspace/`.
+
+A bootstrap agent may expose those skills to the current workspace by creating a workspace-local junction from `<workspaceRoot>\.codex\skills` to `<workspaceRoot>\axolync-agent\skills-workspace`.
+
+For Sinq1:
+
+```cmd
+mklink /J "C:\Users\koren\src\Sinq\.codex\skills" "C:\Users\koren\src\Sinq\axolync-agent\skills-workspace"
+```
+
+Safety rules:
+
+- create the junction only inside the workspace being bootstrapped
+- inspect and ask before replacing an existing `.codex\skills` path
+- do not install, copy, or junction `skills-user/` into `C:\Users\koren\.codex\skills` unless the user explicitly requests a named user-level skill
+- after creating the junction, reload or restart Codex if `$` skill autocomplete does not refresh immediately
+
 ## Git Editor Rule
 
 Before any Git command that might invoke an editor, set a noninteractive `GIT_EDITOR` in the same shell.

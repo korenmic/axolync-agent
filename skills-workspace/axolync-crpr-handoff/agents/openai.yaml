@@ -1,0 +1,4 @@
+interface:
+  display_name: "Axolync CRPR Handoff"
+  short_description: "Review Axolync PRs and write CRPR.md without touching other workspaces"
+  default_prompt: "Use $axolync-crpr-handoff to review the requested Axolync PRs and write the CRPR.md handoff while treating other workspaces as read-only."

@@ -12,6 +12,7 @@ This turn is orientation only, not implementation or execution proof.
 Hard rules:
 - Write only inside the current workspace.
 - Do not touch sibling repos or parent folders outside the current workspace root.
+- You may create a workspace-local junction from `<workspaceRoot>\.codex\skills` to `<workspaceRoot>\axolync-agent\skills-workspace` after confirming the destination does not already exist. Do not install or link `axolync-agent\skills-user` into the user's `~\.codex\skills` unless the user explicitly requests a named user-level skill.
 - Before any Git command that might invoke an editor, set a noninteractive `GIT_EDITOR` in the same shell. PowerShell: `$env:GIT_EDITOR='true'`. Bash/sh: `export GIT_EDITOR=true`.
 - This is mandatory. Do not rely on the machine-default Git editor, because it may open a manual editor such as Notepad++ and block autonomous progress.
 - Clone `korenmic/axolync-builder` into the current workspace with `gh`, shallow.
