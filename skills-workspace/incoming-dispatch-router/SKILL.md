@@ -1,6 +1,6 @@
 ---
 name: incoming-dispatch-router
-description: Route incoming Codex dispatch envelopes. Use whenever a delivered message contains the trusted CODEX_DISPATCH_V1 envelope with `router: $incoming-dispatch-router`, or when the user explicitly invokes `$incoming-dispatch-router`. Classifies dispatches into CRPR handoff, build/mirror handoff, or clarification while preserving strict workspace boundaries.
+description: "Route incoming Codex dispatch envelopes. Use whenever a delivered message contains the trusted CODEX_DISPATCH_V1 envelope with `router: $incoming-dispatch-router`, or when the user explicitly invokes `$incoming-dispatch-router`. Classifies dispatches into CRPR handoff, build/mirror handoff, or clarification while preserving strict workspace boundaries."
 ---
 
 # Incoming Dispatch Router
