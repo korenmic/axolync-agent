@@ -1,0 +1,39 @@
+schema = "axolync.repo/v1"
+
+[repo]
+id = "axolync-agent"
+roles = ["consumable"]
+display_name = "Axolync Agent"
+description = "Agent bootstrap, workspace skill, dispatch, and coordination surface consumed by builder and coding agents."
+
+[source]
+git_url = "https://github.com/korenmic/axolync-agent.git"
+default_ref = "master"
+local_dev_path_hint = "../axolync-agent"
+
+[bootstrap]
+install_mode = "managed-clone"
+install_root = ".axolync/repos"
+readme = "README.md"
+agent_docs = ["README.md", "bootstrap/axolync-builder.bootstrap.md", "bootstrap/recommended-reading.md", "bootstrap/repo-summaries.md", "bootstrap/axolync.vocabulary.md"]
+
+[exports.tests]
+full = "python -m unittest discover -s tests"
+smoke = "python -m unittest discover -s tests -p \"test_skill_frontmatter.py\""
+
+[exports.seeds]
+roots = ["project-seeds"]
+
+[exports.docs]
+bootstrap = ["README.md", "bootstrap/axolync-builder.bootstrap.md", "bootstrap/recommended-reading.md", "bootstrap/repo-summaries.md", "bootstrap/axolync.vocabulary.md"]
+standards = ["README.md"]
+
+[[exports.inventories]]
+name = "workspace-skills"
+path = "skills-workspace"
+format = "directory"
+
+[[exports.inventories]]
+name = "user-skills"
+path = "skills-user"
+format = "directory"

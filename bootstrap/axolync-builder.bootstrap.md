@@ -179,6 +179,7 @@ The managed sibling set now also includes:
 - `axolync-addon-itunes` as the Apple/iTunes SongMetadata provider addon repo
 - `axolync-addon-spotify` as the Spotify SongMetadata provider addon repo
 - `axolync-addon-musicbrainz` as the MusicBrainz SongMetadata provider addon repo
+- `axolync-agent` as the shared agent bootstrap, skills, dispatch, and coordination repo
 
 If full history is needed later for one repo:
 

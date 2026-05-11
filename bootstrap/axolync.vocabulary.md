@@ -181,6 +181,26 @@ This file is not a quick-start guide. Use [README.md](README.md) for commands, b
 - **Preferred term:** `sub-repo`
 - **Meaning:** One of the sibling product repos orchestrated by builder.
 
+### Repo Descriptor
+- **Preferred term:** `repo descriptor`
+- **File:** `axolync.repo.toml`
+- **Meaning:** A repo-local declaration of a tracked Axolync repo's roles, exported surfaces, bootstrap docs, tests, seeds, inventories, packaging outputs, and descriptor-declared repo consumption.
+
+### Repo Consumer
+- **Preferred term:** `consumer`
+- **Meaning:** A tracked Axolync repo that reads or uses descriptor-declared exports from other tracked repos.
+- **Example:** `axolync-builder` is the root consumer for build/report/catalog orchestration.
+
+### Repo Consumable
+- **Preferred term:** `consumable`
+- **Meaning:** A tracked Axolync repo that exposes descriptor-declared exports for other repos or agents to consume.
+- **Examples:** contracts, browser, addons, themes, and `axolync-agent`.
+
+### Axolync Agent
+- **Preferred term:** `axolync-agent`
+- **Meaning:** The shared agent bootstrap, skills, dispatch, and coordination repo.
+- **Descriptor role:** consumable by builder as a catalog/provider of agent bootstrap docs, workspace/user skill inventories, and agent-side project seeds.
+
 ## Adapter Lifecycle / Visibility Terms
 
 ### Runtime Code Status
