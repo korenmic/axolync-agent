@@ -61,7 +61,7 @@ Everything from `## Open Questions` to end-of-file is treated as the Open Questi
 Run:
 
 ```powershell
-python C:\Users\koren\.codex\skills\spec-maker\scripts\generate_seed_prompt.py --seed <seed-path> --workspace <workspace-root>
+python <user-codex-skills>\spec-maker\scripts\generate_seed_prompt.py --seed <seed-path> --workspace <workspace-root>
 ```
 
 Optional arguments:
@@ -72,10 +72,10 @@ Optional arguments:
 Example:
 
 ```powershell
-python C:\Users\koren\.codex\skills\spec-maker\scripts\generate_seed_prompt.py `
-  --seed C:\Users\koren\src\Sinq\axolync-plugins-contract\docs\project-seeds\03-addon-owned-rich-addon-global-runtime-surfaces.md `
-  --workspace C:\Users\koren\src\Sinq `
-  --output C:\Users\koren\src\Sinq\.codex\tmp\chat\prompt-contract-03-spec-maker.md
+python <user-codex-skills>\spec-maker\scripts\generate_seed_prompt.py `
+  --seed <workspace-root>\axolync-contract\docs\project-seeds\03-addon-owned-rich-addon-global-runtime-surfaces.md `
+  --workspace <workspace-root> `
+  --output <workspace-root>\.codex\tmp\chat\prompt-contract-03-spec-maker.md
 ```
 
 ## Output Rules
@@ -84,4 +84,3 @@ python C:\Users\koren\.codex\skills\spec-maker\scripts\generate_seed_prompt.py `
 - report the output file path back to the user
 - when comparing against Kiro output, compare content, not filename
 - preserve the observed newline style from the chosen template prompt
-

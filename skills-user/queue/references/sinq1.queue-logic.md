@@ -40,9 +40,9 @@ Important rule:
 
 ## Current Sinq Workspace
 
-For `C:\Users\koren\src\Sinq`, the established local queue artifact is:
+For the active workspace root, the established local queue artifact is:
 
-- `C:\Users\koren\src\Sinq\.codex\local-task-queue.md`
+- `<workspace-root>\.codex\local-task-queue.md`
 
 So when the user says "add to queue" in this workspace, the default meaning is:
 

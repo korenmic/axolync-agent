@@ -6,7 +6,7 @@ In `Sinq4`, the real queue is **not** "all unchecked tasks in all spec `tasks.md
 
 The real queue is the curated backlog artifact:
 
-- `C:\Users\koren\src\Sinq4\axolync-builder\backlog\tasks.md`
+- `<workspace-root>\axolync-builder\backlog\tasks.md`
 
 When the user asks about:
 
@@ -143,4 +143,3 @@ In this workspace, "queue" means:
 
 - the consciously curated next-work list
 - not every historical unchecked planning checkbox
-

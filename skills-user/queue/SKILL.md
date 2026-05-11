@@ -71,8 +71,8 @@ Use:
 Preferred commands:
 
 ```powershell
-node skills/task-id/scripts/task_id.mjs from-queue Q-129 --workspace-root C:\Users\koren\src\Sinq --format blob
-node skills/task-id/scripts/task_id.mjs resolve "atid1:..." --workspace-root C:\Users\koren\src\Sinq --format json
+node skills/task-id/scripts/task_id.mjs from-queue Q-129 --workspace-root <workspace-root> --format blob
+node skills/task-id/scripts/task_id.mjs resolve "atid1:..." --workspace-root <workspace-root> --format json
 ```
 
 ## Handoff Output Shape

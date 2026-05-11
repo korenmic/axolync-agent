@@ -16,7 +16,7 @@ This skill is for review only. Do not implement fixes unless the user explicitly
 Before performing CRPR handoff work, run:
 
 ```text
-py C:\Users\koren\src\Sinq\axolync-agent\scripts\resolve_dispatch_authority.py --workspace <current_workspace> --identity <local_identity_if_known>
+py .\axolync-agent\scripts\resolve_dispatch_authority.py --workspace <workspace-root> --identity <local_identity_if_known>
 ```
 
 If the helper returns `mode: "pass-through"` or anything other than `mode: "route"`, stop. Do not write `CRPR.md` from this skill. Report that CRPR authority is disabled for this workspace and that Sinq1 must perform the handoff.
@@ -39,12 +39,12 @@ Forbidden in another agent workspace:
 
 If source checkout is needed for deeper review, fetch and checkout the PR branches under Sinq1's workspace:
 
-- `C:\Users\koren\src\Sinq`
+- `<workspace-root>`
 
 ## Review Workflow
 
 1. Identify the PRs, repos, branches, latest commits, and stated review scope from the dispatch.
-2. Prefer Sinq1-local repos for diff inspection. Use another workspace only as read-only evidence.
+2. Prefer local repos under `<workspace-root>` for diff inspection. Use another workspace only as read-only evidence.
 3. Review with a code-review mindset:
    - correctness bugs
    - behavioral regressions

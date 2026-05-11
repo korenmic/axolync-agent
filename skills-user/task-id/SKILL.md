@@ -35,13 +35,13 @@ Use:
 From a queue item:
 
 ```powershell
-node skills/task-id/scripts/task_id.mjs from-queue Q-129 --workspace-root C:\Users\koren\src\Sinq --format blob
+node skills/task-id/scripts/task_id.mjs from-queue Q-129 --workspace-root <workspace-root> --format blob
 ```
 
 From a source task file and index:
 
 ```powershell
-node skills/task-id/scripts/task_id.mjs from-source C:\Users\koren\src\Sinq\axolync-browser\backlog\tasks.md 186 --workspace-root C:\Users\koren\src\Sinq --format blob
+node skills/task-id/scripts/task_id.mjs from-source <workspace-root>\axolync-browser\backlog\tasks.md 186 --workspace-root <workspace-root> --format blob
 ```
 
 Decode a packed id:
@@ -53,8 +53,8 @@ node skills/task-id/scripts/task_id.mjs decode "atid1:..." --format json
 Resolve any human-readable or packed id back to file + task text:
 
 ```powershell
-node skills/task-id/scripts/task_id.mjs resolve "htid1:axolync-browser::backlog/tasks.md::24" --workspace-root C:\Users\koren\src\Sinq --format blob
-node skills/task-id/scripts/task_id.mjs resolve "atid1:..." --workspace-root C:\Users\koren\src\Sinq --format blob
+node skills/task-id/scripts/task_id.mjs resolve "htid1:axolync-browser::backlog/tasks.md::24" --workspace-root <workspace-root> --format blob
+node skills/task-id/scripts/task_id.mjs resolve "atid1:..." --workspace-root <workspace-root> --format blob
 ```
 
 ## Resolution Rules

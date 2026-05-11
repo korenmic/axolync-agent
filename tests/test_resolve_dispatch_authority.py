@@ -14,11 +14,11 @@ class DispatchAuthorityTests(unittest.TestCase):
         from scripts.resolve_dispatch_authority import resolve_dispatch_authority
 
         self.assertEqual(
-            resolve_dispatch_authority(r"C:\Users\koren\src\Sinq")["mode"],
+            resolve_dispatch_authority("Sinq")["mode"],
             "route",
         )
         self.assertEqual(
-            resolve_dispatch_authority(r"C:\Users\koren\src\Sinq", "Sinq1")["mode"],
+            resolve_dispatch_authority("Sinq", "Sinq1")["mode"],
             "route",
         )
 
@@ -26,11 +26,11 @@ class DispatchAuthorityTests(unittest.TestCase):
         from scripts.resolve_dispatch_authority import resolve_dispatch_authority
 
         self.assertEqual(
-            resolve_dispatch_authority(r"C:\Users\koren\src\Sinq2")["mode"],
+            resolve_dispatch_authority("Sinq2")["mode"],
             "pass-through",
         )
         self.assertEqual(
-            resolve_dispatch_authority(r"\\?\C:\Users\koren\src\Sinq4")["effectiveIdentity"],
+            resolve_dispatch_authority(r"\\?\D:\workspaces\Sinq4")["effectiveIdentity"],
             "sinq4",
         )
         self.assertFalse(resolve_dispatch_authority(None)["primary"])
@@ -38,7 +38,7 @@ class DispatchAuthorityTests(unittest.TestCase):
     def test_identity_workspace_conflict_passes_through(self):
         from scripts.resolve_dispatch_authority import resolve_dispatch_authority
 
-        result = resolve_dispatch_authority(r"C:\Users\koren\src\Sinq4", "Sinq1")
+        result = resolve_dispatch_authority("Sinq4", "Sinq1")
         self.assertEqual(result["mode"], "pass-through")
         self.assertEqual(result["reason"], "identity-workspace-mismatch")
         self.assertTrue(result["identityConflict"])
@@ -49,7 +49,7 @@ class DispatchAuthorityTests(unittest.TestCase):
                 sys.executable,
                 str(SCRIPT),
                 "--workspace",
-                r"\\?\C:\Users\koren\src\Sinq",
+                r"\\?\D:\workspaces\Sinq",
             ],
             cwd=ROOT,
             text=True,

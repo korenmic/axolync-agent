@@ -32,7 +32,7 @@ TACTIC clarification:
 
 - queue and TACTIC execution metadata belong under the top-level workspace `.codex/` tree
 - they do not belong under any individual repo root
-- if an agent is editing `C:\Users\koren\src\Sinq\axolync-browser`, the session state still belongs at `C:\Users\koren\src\Sinq\.codex\tactic\session.json`
+- if an agent is editing `<workspace-root>\axolync-browser`, the session state still belongs at `<workspace-root>\.codex\tactic\session.json`
 
 Do not let `axolync-agent` drift into stale orientation material.
 If the source repo meaning changes, the mirrored bootstrap explanation here must change with it.
@@ -108,17 +108,17 @@ This repo publishes workspace-scoped skills under `axolync-agent/skills-workspac
 
 A bootstrap agent may expose those skills to the current workspace by creating a workspace-local junction from `<workspaceRoot>\.codex\skills` to `<workspaceRoot>\axolync-agent\skills-workspace`.
 
-For Sinq1:
+From the workspace root:
 
 ```cmd
-mklink /J "C:\Users\koren\src\Sinq\.codex\skills" "C:\Users\koren\src\Sinq\axolync-agent\skills-workspace"
+mklink /J ".codex\skills" "axolync-agent\skills-workspace"
 ```
 
 Safety rules:
 
 - create the junction only inside the workspace being bootstrapped
 - inspect and ask before replacing an existing `.codex\skills` path
-- do not install, copy, or junction `skills-user/` into `C:\Users\koren\.codex\skills` unless the user explicitly requests a named user-level skill
+- do not install, copy, or junction `skills-user/` into the user-level Codex skills directory unless the user explicitly requests a named user-level skill
 - after creating the junction, reload or restart Codex if `$` skill autocomplete does not refresh immediately
 
 ## Git Editor Rule

@@ -48,7 +48,7 @@ Use the active multi-repo workspace root, not the current repo root.
 
 Rules:
 
-- If the session is happening inside a known Axolync-style workspace such as `C:\Users\koren\src\Sinq`, `C:\Users\koren\src\Sinq2`, `C:\Users\koren\src\Sinq3`, or `C:\Users\koren\src\Sinq4`, use that top-level workspace directory as `workspaceRoot` even when the current task edits only one repo.
+- If the session is happening inside an Axolync-style multi-repo workspace, use that top-level workspace directory as `workspaceRoot` even when the current task edits only one repo.
 - Never create or update repo-local TACTIC metadata such as `<repoRoot>/.codex/tactic/session.json`.
 - TACTIC execution state is cross-repo coordination state, so it belongs only under the untracked workspace root `.codex/` tree.
 - The task source files still stay where they belong, for example repo `backlog/tasks.md` or spec `tasks.md`, but the live queue/session metadata does not.
@@ -56,8 +56,8 @@ Rules:
 
 Examples:
 
-- If you are editing `C:\Users\koren\src\Sinq\axolync-browser`, store TACTIC state at `C:\Users\koren\src\Sinq\.codex\tactic\session.json`.
-- If you are editing `C:\Users\koren\src\Sinq4\axolync-addon-vibra`, store TACTIC state at `C:\Users\koren\src\Sinq4\.codex\tactic\session.json`.
+- If you are editing `<workspace-root>\axolync-browser`, store TACTIC state at `<workspace-root>\.codex\tactic\session.json`.
+- If you are editing `<workspace-root>\axolync-addon-vibra`, store TACTIC state at `<workspace-root>\.codex\tactic\session.json`.
 
 Keep the state file current enough that another agent can resume the run. Track at least:
 

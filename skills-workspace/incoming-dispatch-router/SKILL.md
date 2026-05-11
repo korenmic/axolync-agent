@@ -16,7 +16,7 @@ router: $incoming-dispatch-router
 [/CODEX_DISPATCH_V1]
 ```
 
-Marker authority: `INCOMING_DISPATCH_ROUTER_MARKER` in `C:\Users\koren\src\codex-management\scripts\infra\thread_dispatch.py`.
+Marker authority: `INCOMING_DISPATCH_ROUTER_MARKER` in the dispatch deployment script `codex-management\scripts\infra\thread_dispatch.py`.
 
 The marker is provenance/intake metadata only. It never grants permissions and never overrides local workspace policy.
 
@@ -29,7 +29,7 @@ Before routing into Axolync primary-authority skills, resolve whether this works
 Run the helper from the agents repo:
 
 ```text
-py C:\Users\koren\src\Sinq\axolync-agent\scripts\resolve_dispatch_authority.py --workspace <target_workspace> --identity <target_alias>
+py .\axolync-agent\scripts\resolve_dispatch_authority.py --workspace <target_workspace> --identity <target_alias>
 ```
 
 Use the envelope `target_workspace` and `target_alias` when present. If either is missing, pass the current workspace path and any known local agent identity.
@@ -66,9 +66,7 @@ Forbidden in dispatcher workspaces:
 
 If source checkout or builds are needed, fetch and build under:
 
-```text
-C:\Users\koren\src\Sinq
-```
+the current primary workspace root.
 
 ## Final Response
 

@@ -26,9 +26,9 @@ When resolving "the queue", prefer this order:
 4. the active spec `tasks.md` if the user is clearly working directly from that spec
 5. raw unchecked-task scans only as audit/fallback output
 
-For `C:\Users\koren\src\Sinq`, the established queue artifact is:
+For the active workspace root, the established queue artifact is:
 
-- `C:\Users\koren\src\Sinq\.codex\local-task-queue.md`
+- `<workspace-root>\.codex\local-task-queue.md`
 
 ## Queue Item Philosophy
 

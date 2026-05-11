@@ -1,13 +1,13 @@
 # Sinq3 Queue Logic
 
-This note summarizes the queueing logic currently used in the `C:\Users\koren\src\Sinq3` workspace.
+This note summarizes queueing logic used in a non-primary Axolync workspace.
 
 It is a summary for agent consumption, not the authoritative queue itself.
 
 ## Authority
 
 - The authoritative local queue file is:
-  - `C:\Users\koren\src\Sinq3\.codex\tmp\execution-queue.json`
+- `<workspace-root>\.codex\tmp\execution-queue.json`
 - The queue is intentionally local-only.
 - It must live outside tracked repos to avoid repo churn.
 - The queue must never become a second source of truth for tasks.

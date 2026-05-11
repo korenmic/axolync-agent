@@ -16,16 +16,16 @@ Sinq1 is the single build authority. Other workspaces may contain useful branch 
 Before performing any checkout, dependency install, test, build, report, or mirror action, run:
 
 ```text
-py C:\Users\koren\src\Sinq\axolync-agent\scripts\resolve_dispatch_authority.py --workspace <current_workspace> --identity <local_identity_if_known>
+py .\axolync-agent\scripts\resolve_dispatch_authority.py --workspace <workspace-root> --identity <local_identity_if_known>
 ```
 
 If the helper returns `mode: "pass-through"` or anything other than `mode: "route"`, stop. Do not execute build/mirror work from this skill. Report that build authority is disabled for this workspace and that Sinq1 must perform the handoff.
 
 ## Hard Workspace Boundary
 
-Build only under:
+Build only under the current primary workspace root:
 
-- `C:\Users\koren\src\Sinq`
+- `<workspace-root>`
 
 Allowed in another agent workspace:
 - Read branch names, task files, logs, evidence, and PR context.
@@ -40,12 +40,12 @@ Forbidden in another agent workspace:
 - Do not edit source files.
 
 Before any build/report command, verify:
-- current directory is under `C:\Users\koren\src\Sinq`
-- all repo paths are under `C:\Users\koren\src\Sinq`
-- builder path is `C:\Users\koren\src\Sinq\axolync-builder`
-- toolchain path, if used, is under `C:\Users\koren\src\Sinq\axolync-builder\.tools`
+- current directory is under `<workspace-root>`
+- all repo paths are under `<workspace-root>`
+- builder path is `<workspace-root>\axolync-builder`
+- toolchain path, if used, is under `<workspace-root>\axolync-builder\.tools`
 - mirror destination is `E:\artifacts\axolync` or another explicitly requested non-workspace path
-- no path resolves under `C:\Users\koren\src\Sinq2`, `Sinq3`, `Sinq4`, or any other agent workspace
+- no path resolves under another agent workspace
 
 If any check fails, stop and report the blocker.
 
@@ -54,8 +54,8 @@ If any check fails, stop and report the blocker.
 When a dispatch references branches checked out in another workspace:
 
 1. Treat those branches as remote branch names only.
-2. Fetch the relevant remotes in Sinq1-local repos.
-3. Check out or use builder repo-ref overrides in Sinq1-local repos only.
+2. Fetch the relevant remotes in local repos under `<workspace-root>`.
+3. Check out or use builder repo-ref overrides in local repos under `<workspace-root>` only.
 4. Record exact resolved commits used in the final summary.
 
 ## CI Modes
