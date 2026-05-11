@@ -40,3 +40,5 @@ User-level installation is allowed only when the user explicitly requests it for
 Sinq1 is the Axolync CR and build authority. Build/report/mirror work must run in `C:\Users\koren\src\Sinq` using Sinq1-local repo checkouts and builder tooling.
 
 Other Sinq workspaces are read-only evidence sources unless a dispatch explicitly requests a root-level handoff file such as `CRPR.md`.
+
+The primary dispatch, CRPR, and build/mirror skills are guarded by `scripts/resolve_dispatch_authority.py`. In workspaces whose identity is not `Sinq` or `Sinq1`, those skills must fail closed instead of routing into primary-authority workflows.

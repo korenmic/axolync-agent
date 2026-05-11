@@ -11,6 +11,16 @@ Use this skill when another Sinq agent asks Sinq1 to build reviewed Axolync PR b
 
 Sinq1 is the single build authority. Other workspaces may contain useful branch context, but they are not build locations.
 
+## Authority Gate
+
+Before performing any checkout, dependency install, test, build, report, or mirror action, run:
+
+```text
+py C:\Users\koren\src\Sinq\axolync-agent\scripts\resolve_dispatch_authority.py --workspace <current_workspace> --identity <local_identity_if_known>
+```
+
+If the helper returns `mode: "pass-through"` or anything other than `mode: "route"`, stop. Do not execute build/mirror work from this skill. Report that build authority is disabled for this workspace and that Sinq1 must perform the handoff.
+
 ## Hard Workspace Boundary
 
 Build only under:

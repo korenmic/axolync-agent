@@ -11,6 +11,16 @@ Use this skill when another Sinq agent asks Sinq1 to review Axolync PRs and writ
 
 This skill is for review only. Do not implement fixes unless the user explicitly changes the task.
 
+## Authority Gate
+
+Before performing CRPR handoff work, run:
+
+```text
+py C:\Users\koren\src\Sinq\axolync-agent\scripts\resolve_dispatch_authority.py --workspace <current_workspace> --identity <local_identity_if_known>
+```
+
+If the helper returns `mode: "pass-through"` or anything other than `mode: "route"`, stop. Do not write `CRPR.md` from this skill. Report that CRPR authority is disabled for this workspace and that Sinq1 must perform the handoff.
+
 ## Workspace Boundary
 
 Sinq1 is the CR authority, but other Sinq workspaces are not build/edit workspaces.
