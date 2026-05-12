@@ -15,7 +15,14 @@ Skill roots to list:
 
 - `skills-user`
 - `skills-workspace`
-- legacy `skills` if present
+
+Prefer the bundled script to avoid shell quoting drift:
+
+```powershell
+rtk node skills-workspace/lssa/scripts/list-agent-skills.mjs
+```
+
+If RTK is unavailable, run the same Node script directly.
 
 ## Output
 
