@@ -31,7 +31,7 @@ Before editing, classify the repo. More than one may apply.
 - `platform-wrapper`: Android/iOS/desktop wrapper authority.
 - `addon`: installable or preinstallable addon package repo.
 - `adapter-catalog`: adapter candidate catalog, research, seed, or adapter manifest authority for one or more controller lanes.
-- `addon-pack`: repo that aggregates selected addons into an installable/preinstallable pack or pack-definition authority.
+- `addon-pack`: repo that consumes selected addon repos/packages and exports an installable/preinstallable pack or pack-definition authority. It is both a `consumer` and a `consumable`.
 - `plugin`: legacy-only first-party bridge package repo. Do not use this classification for new repo naming unless the task is explicitly about existing `*-plugin` repos.
 - `theme`: installable or preinstallable theme package repo.
 - `agent-tooling`: agent skills, seeds, dispatch, workflow, or automation repo.
@@ -62,6 +62,7 @@ Classify new repos by role, not by legacy naming. Artifact packaging, preinstall
 For every consumed repo:
 
 - Add or update repo descriptors in the owning repo and consumer repo when the descriptor model applies.
+- For addon-pack repos, set descriptor roles to `["consumer", "consumable"]`, declare member addon repos under `consumes.repos` with `use = "addon-pack-member"`, and declare the final pack artifact as an export. Do not model generated member ZIPs as consumed repos.
 - Update builder repo discovery only for builder-owned fields such as local path, submodule path, submodule URL, version authority, clean paths, and command wiring.
 - Add tests that prove the repo is discoverable from the intended consumer, not just present on disk.
 - Keep builder-owned fields and repo-owned descriptor fields separated. If a field is transitional, document and test the boundary.
@@ -81,6 +82,7 @@ For addon, addon-pack, legacy plugin, or adapter-catalog repos:
 - Add preinstall metadata only when the repo should ship preinstalled in an artifact profile.
 - Add or update build-preset TOML preinstalled addon lists only when the product artifact should include the addon by default.
 - Preserve the distinction between `installable addon artifact ZIP` and `preinstalled addon package`.
+- For addon-pack repos, preserve the distinction between member addon package ZIPs and the final pack ZIP. Builder may consume member repo exports, but generated ZIP outputs are never role-bearing repos.
 - For adapter-catalog repos, keep catalog/report wiring independent from package ZIP publication unless the task explicitly asks for a shippable runtime package.
 
 For native-capable addon repos:
