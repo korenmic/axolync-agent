@@ -19,7 +19,7 @@ Do not implement generated tasks. Stop after `tasks.md` is created and self-revi
 4. Deduplicate repeated or equivalent questions across the selected seeds.
 5. Analyze only the final questions that will be shown to the user. Identify question-local vocabulary that is defined only inside the seed/generated prompt context or is otherwise opaque without reading that context.
 6. Before showing the first question, show a `Question Vocabulary` section explaining only those opaque terms or phrases used in the displayed questions.
-7. Present each deduplicated question with recommended answers. Put the most recommended answer first and mark it clearly.
+7. Present each deduplicated question with recommended answers. Put the most recommended answer first, mark it clearly, and give every answer option a stable letter label.
 8. For grouped seeds, show which seed(s) each question applies to.
 9. Wait for user answers. Do not generate requirements/design/tasks until answers are provided or the user explicitly says to use recommended answers.
 10. Apply each answer only to the relevant seed/question contexts where it matches. Do not broadcast an answer to unrelated seeds just because the wording is similar.
@@ -61,10 +61,17 @@ Use this format for the interactive question pass:
 Applies to: `seed-a`, `seed-b`
 
 Recommended answers:
-- Recommended: concise answer and why it is preferred.
-- Alternative: concise answer and tradeoff.
-- Alternative: concise answer and tradeoff.
+A. Recommended: concise answer and why it is preferred.
+B. Alternative: concise answer and tradeoff.
+C. Alternative: concise answer and tradeoff.
 ```
+
+Answer-option labels must be persistent within the pass:
+
+- Use `A.`, `B.`, `C.` and continue alphabetically when more options are needed.
+- Put each answer option on its own line.
+- Do not renumber or relabel options after the user answers.
+- Accept user replies by letter, exact answer text, or free form.
 
 When the user answers in free form, normalize the answer into concrete seed/spec decisions before hardening files.
 

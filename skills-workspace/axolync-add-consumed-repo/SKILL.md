@@ -1,11 +1,6 @@
 ---
 name: axolync-add-consumed-repo
-description: Add or review a new Axolync repository as a consumed repo across descriptors, builder wiring, reports, catalogs, seeds, addon artifacts, and applicable tests. Use when the user asks to add a new Axolync repo, register a consumed repo, wire a repo into builder/report outputs, or validate repo onboarding completeness.
-aliases:
-  - add-repo
-  - add-axolync-repo
-  - axolync-consumed-repo
-  - register-axolync-repo
+description: Add or review a new Axolync repository as a consumed repo across descriptors, builder wiring, reports, catalogs, seeds, addon artifacts, and applicable tests. Use when the user says add-repo, add-axolync-repo, axolync-consumed-repo, register-axolync-repo, asks to add a new Axolync repo, register a consumed repo, wire a repo into builder/report outputs, or validate repo onboarding completeness.
 ---
 
 # Axolync Add Consumed Repo
