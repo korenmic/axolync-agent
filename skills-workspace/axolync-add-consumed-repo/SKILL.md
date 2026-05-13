@@ -35,11 +35,32 @@ Before editing, classify the repo. More than one may apply.
 - `browser`: browser app/runtime authority.
 - `platform-wrapper`: Android/iOS/desktop wrapper authority.
 - `addon`: installable or preinstallable addon package repo.
-- `plugin`: first-party plugin/runtime package repo.
+- `adapter-catalog`: adapter candidate catalog, research, seed, or adapter manifest authority for one or more controller lanes.
+- `addon-pack`: repo that aggregates selected addons into an installable/preinstallable pack or pack-definition authority.
+- `plugin`: legacy-only first-party bridge package repo. Do not use this classification for new repo naming unless the task is explicitly about existing `*-plugin` repos.
 - `theme`: installable or preinstallable theme package repo.
 - `agent-tooling`: agent skills, seeds, dispatch, workflow, or automation repo.
 
 Use the classification to decide which surfaces below apply. Do not blindly add all surfaces.
+
+## New Repo Creation Gate
+
+When the requested repo does not exist yet, create only the minimal repo shell needed for the current task unless the user or seed explicitly asks for bootstrap, build, package, or artifact work.
+
+Default minimal shell may include:
+
+- GitHub repo and local sibling clone.
+- README or project seed describing purpose.
+- `axolync.repo.toml` when descriptor authority applies.
+- repo-local project seed placeholders when applicable.
+- adapter/catalog placeholders only for controller-lane or adapter-authority repos where the current task explicitly asks for catalog/discovery scaffolding.
+- minimal tests only when they prove descriptor, discovery, or catalog wiring requested by the current task.
+
+Do not install dependencies, bootstrap the repo, run full builds, generate package ZIPs, add preinstalled defaults, or stage generated artifacts unless explicitly required by the current task.
+
+Do not create catalog placeholders for ordinary addon, theme, wrapper, builder, contract, or agent-tooling repos unless the user or seed explicitly defines that repo as adapter catalog authority.
+
+Classify new repos by role, not by legacy naming. Artifact packaging, preinstalled defaults, and builder build-profile changes are applicable only when the current task explicitly asks for artifact composition or when the repo already has shippable runtime contents.
 
 ## Required Surfaces
 
@@ -56,7 +77,7 @@ For repos that participate in reports:
 - Add task/seed metadata references if the repo has project seeds or spec tasks.
 - Add platform-report or inventory tests that prove the repo's rows are present and truthful.
 
-For addon/plugin repos:
+For addon, addon-pack, legacy plugin, or adapter-catalog repos:
 
 - Add adapter catalog manifest paths and profile ids when the repo exposes runtime adapters.
 - Add addon package ZIP metadata when the repo should produce an installable addon artifact.
@@ -65,6 +86,7 @@ For addon/plugin repos:
 - Add preinstall metadata only when the repo should ship preinstalled in an artifact profile.
 - Add or update build-preset TOML preinstalled addon lists only when the product artifact should include the addon by default.
 - Preserve the distinction between `installable addon artifact ZIP` and `preinstalled addon package`.
+- For adapter-catalog repos, keep catalog/report wiring independent from package ZIP publication unless the task explicitly asks for a shippable runtime package.
 
 For native-capable addon repos:
 
