@@ -51,6 +51,20 @@ Use the smallest matching handoff skill:
 - Mixed CRPR plus build: complete CRPR first unless the dispatch explicitly says review is already clean.
 - Unknown or ambiguous dispatch: ask one narrow clarification before taking action.
 
+## Delayed Checkout Restoration
+
+Before routing any dispatch that may inspect, fetch, or check out local PR branches, derive a stable `group-key` from the dispatch's PR URLs and branch names. Use the same key for follow-up ping-pong dispatches that are still about the same PR group.
+
+Run the checkout-state helper before local branch work:
+
+```text
+py .\axolync-agent\scripts\dispatch_checkout_state.py restore-stale --workspace-root <workspace-root> --group-key <group-key>
+```
+
+If it restores repos, report that in the handoff progress. If it refuses because a repo is dirty, stop and ask for operator attention unless the dirty files are known generated residue that the relevant repo policy says may be cleaned.
+
+Do not restore at the end of the dispatch. The next unrelated dispatch is responsible for restoring stale temporary checkouts, so follow-up CR/build dispatches for the same PR group can continue without checkout churn.
+
 ## Workspace Boundary
 
 Sinq1 is the execution authority.

@@ -44,15 +44,29 @@ If source checkout is needed for deeper review, fetch and checkout the PR branch
 ## Review Workflow
 
 1. Identify the PRs, repos, branches, latest commits, and stated review scope from the dispatch.
-2. Prefer local repos under `<workspace-root>` for diff inspection. Use another workspace only as read-only evidence.
-3. Review with a code-review mindset:
+2. Derive a stable `group-key` from the requested PR URLs and branch names.
+3. Before local checkout work, run:
+
+```text
+py .\axolync-agent\scripts\dispatch_checkout_state.py restore-stale --workspace-root <workspace-root> --group-key <group-key>
+```
+
+4. Before changing each local repo away from its current branch, record its previous checkout:
+
+```text
+py .\axolync-agent\scripts\dispatch_checkout_state.py record --workspace-root <workspace-root> --dispatch-id <dispatch-id> --group-key <group-key> --repo-id <repo-id> --repo-path <repo-path>
+```
+
+5. Prefer local repos under `<workspace-root>` for diff inspection. Use another workspace only as read-only evidence.
+6. Do not restore at CRPR completion; same-PR ping-pong follow-ups may still need those branches. The next unrelated dispatch restores stale state.
+7. Review with a code-review mindset:
    - correctness bugs
    - behavioral regressions
    - missing or weak tests
    - build/report integration risks
    - cross-repo contract mismatches
-4. For ping-pong rounds, focus on newly pushed fixes and whether prior action items are resolved.
-5. Write `CRPR.md` only if requested.
+8. For ping-pong rounds, focus on newly pushed fixes and whether prior action items are resolved.
+9. Write `CRPR.md` only if requested.
 
 ## CRPR.md Format
 

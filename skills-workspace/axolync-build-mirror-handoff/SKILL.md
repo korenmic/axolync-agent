@@ -55,8 +55,22 @@ When a dispatch references branches checked out in another workspace:
 
 1. Treat those branches as remote branch names only.
 2. Fetch the relevant remotes in local repos under `<workspace-root>`.
-3. Check out or use builder repo-ref overrides in local repos under `<workspace-root>` only.
-4. Record exact resolved commits used in the final summary.
+3. Derive a stable `group-key` from the requested PR URLs and branch names.
+4. Before local checkout work, run:
+
+```text
+py .\axolync-agent\scripts\dispatch_checkout_state.py restore-stale --workspace-root <workspace-root> --group-key <group-key>
+```
+
+5. Before changing each local repo away from its current branch, record its previous checkout:
+
+```text
+py .\axolync-agent\scripts\dispatch_checkout_state.py record --workspace-root <workspace-root> --dispatch-id <dispatch-id> --group-key <group-key> --repo-id <repo-id> --repo-path <repo-path>
+```
+
+6. Check out or use builder repo-ref overrides in local repos under `<workspace-root>` only.
+7. Do not restore at dispatch completion; same-PR follow-up dispatches may still need those branches. The next unrelated dispatch restores stale state.
+8. Record exact resolved commits used in the final summary.
 
 ## CI Modes
 
