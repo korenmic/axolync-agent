@@ -172,6 +172,49 @@ class EnqueueTests(unittest.TestCase):
             self.assertIn("Undone records:", rendered)
             self.assertIn("Added 1 undone tasks in this enqueue session.", rendered)
 
+    def test_enqueue_selection_supports_multiple_specs_in_source_order(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            first = root / "spec-a" / "tasks.md"
+            second = root / "spec-b" / "tasks.md"
+            first.parent.mkdir(parents=True)
+            second.parent.mkdir(parents=True)
+            first.write_text("- [ ] 1. First task\n", encoding="utf-8")
+            second.write_text("- [ ] 1. Second task\n", encoding="utf-8")
+            state = enqueue_tasks.discover_queue_state(root)
+            selection = enqueue_tasks.resolve_source_selection(root, source_paths=[first, second])
+
+            result = enqueue_tasks.enqueue_selection(state, selection)
+            queue_text = state.queue_path.read_text(encoding="utf-8")
+
+            self.assertEqual(result.added_qids, ("Q-001", "Q-002"))
+            self.assertLess(queue_text.index("First task"), queue_text.index("Second task"))
+
+    def test_backlog_tasks_are_enqueued_like_spec_tasks(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            backlog = root / "backlog" / "tasks.md"
+            backlog.parent.mkdir(parents=True)
+            backlog.write_text("- [ ] Add backlog-driven feature\n", encoding="utf-8")
+            state = enqueue_tasks.discover_queue_state(root)
+            selection = enqueue_tasks.resolve_source_selection(root, source_paths=[backlog])
+
+            result = enqueue_tasks.enqueue_selection(state, selection)
+
+            self.assertEqual(result.added_count, 1)
+            self.assertIn("Add backlog-driven feature", state.queue_path.read_text(encoding="utf-8"))
+
+    def test_checked_source_tasks_are_skipped_by_default(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "tasks.md"
+            source.write_text("- [x] 1. Finished task\n- [ ] 2. Runnable task\n", encoding="utf-8")
+            selection = enqueue_tasks.resolve_source_selection(root, source_paths=[source])
+
+            selected = enqueue_tasks.select_source_tasks(selection)
+
+            self.assertEqual([task.label for task in selected], ["2. Runnable task"])
+
 
 if __name__ == "__main__":
     unittest.main()

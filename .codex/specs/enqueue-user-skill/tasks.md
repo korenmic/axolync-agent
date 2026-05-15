@@ -45,7 +45,7 @@
   - After queue-status output, manually state how many undone tasks were added in this enqueue session.
   - Include skipped duplicate count when nonzero.
 
-- [ ] 8. Add deterministic enqueue tests
+- [x] 8. Add deterministic enqueue tests
   - Cover new spec enqueueing with multiple unchecked tasks.
   - Cover specific-task enqueueing from a partially completed spec.
   - Cover multiple specs in one request.
