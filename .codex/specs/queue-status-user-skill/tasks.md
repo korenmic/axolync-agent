@@ -6,7 +6,7 @@
   - State that the skill is read-only and must not execute or mutate queued tasks.
   - Reference the parser script and context-fallback behavior.
 
-- [ ] 2. Add deterministic queue-status parser script
+- [x] 2. Add deterministic queue-status parser script
   - Add `skills-user/queue-status/scripts/queue_status.py`.
   - Implement `--workspace-root` and `--queue-path`.
   - Discover queues in order: explicit path, `.codex/local-task-queue.md`, `.codex/tmp/execution-queue.json`.
