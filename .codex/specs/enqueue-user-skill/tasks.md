@@ -55,7 +55,7 @@
   - Cover context-only by-value tasks without requiring the literal phrase `by-value`.
   - Cover checked source tasks skipped by default.
 
-- [ ] 9. Self-review and document usage limits
+- [x] 9. Self-review and document usage limits
   - Run enqueue tests.
   - Run a manual enqueue check in a temporary workspace fixture.
   - Verify the skill docs distinguish source task identity from queue qid.

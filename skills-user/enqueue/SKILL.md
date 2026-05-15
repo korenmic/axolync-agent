@@ -31,6 +31,20 @@ Resolve the intended tasks from the current conversation. Examples:
 
 Do not scan every visible spec or backlog for all unchecked tasks. Enqueue only tasks that are clearly in scope from the user request and current context.
 
+If the intended scope is ambiguous, ask for a concise clarification instead of guessing broadly.
+
+## Usage Limits
+
+Use `$enqueue` only for queue population. Do not use it for:
+
+- implementation runs
+- CRPR reviews
+- build/report/mirror work
+- queue status inspection without adding tasks
+- broad backlog discovery
+
+Use `$tactic` or `$implement` for implementation after queue records are ready.
+
 ## Workflow
 
 1. Resolve the active workspace root.
@@ -81,3 +95,11 @@ Baseline identity:
 This source task identity is different from `qid`, which identifies the queue record.
 
 Do not use broad fuzzy matching. Normalize only obvious Markdown wrappers, checklist markers, backticks, and whitespace.
+
+## Verification
+
+When changing this skill, run:
+
+```powershell
+python -m unittest tests.test_enqueue -v
+```
