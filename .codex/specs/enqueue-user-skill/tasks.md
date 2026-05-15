@@ -1,6 +1,6 @@
 # Tasks
 
-- [ ] 1. Create the `enqueue` user skill skeleton
+- [x] 1. Create the `enqueue` user skill skeleton
   - Add `axolync-agent/skills-user/enqueue/SKILL.md`.
   - Document `$enqueue` as the canonical invocation.
   - State that the skill mutates only the local queue file and must not implement queued tasks or run TACTIC.
@@ -61,4 +61,3 @@
   - Verify the skill docs distinguish source task identity from queue qid.
   - Verify the docs state that only context-relevant tasks are enqueued.
   - Verify the workflow stops after enqueue/status reporting and does not execute queued tasks.
-
