@@ -19,7 +19,7 @@
   - Classify inline source styles as by-value.
   - Scan later summary/history sections only for duplicate-overlap warnings.
 
-- [ ] 4. Implement JSON queue parsing
+- [x] 4. Implement JSON queue parsing
   - Parse top-level JSON queues with an `items` array.
   - Support `queue_id`, `status`, `source_file_path`, and `referenced_task_title`.
   - Preserve optional metadata fields only as parser context.

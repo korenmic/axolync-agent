@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -203,9 +204,73 @@ def parse_markdown_queue(path: Path, workspace_root: Path) -> QueueParseResult:
     return QueueParseResult(records=records, parser_gaps=gaps, warnings=warnings)
 
 
+def parse_json_queue(path: Path, workspace_root: Path) -> QueueParseResult:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8-sig"))
+    except json.JSONDecodeError as error:
+        return QueueParseResult(parser_gaps=[f"invalid JSON queue: {error}"])
+    if not isinstance(payload, dict):
+        return QueueParseResult(parser_gaps=["JSON queue root must be an object"])
+    items = payload.get("items")
+    if not isinstance(items, list):
+        return QueueParseResult(parser_gaps=["JSON queue must contain an items array"])
+
+    records: list[QueueRecord] = []
+    gaps: list[str] = []
+    for index, item in enumerate(items):
+        if not isinstance(item, dict):
+            gaps.append(f"record {index}: item must be an object")
+            records.append(
+                QueueRecord(
+                    qid=f"record-{index}",
+                    status_raw="",
+                    classification="unrecognized",
+                    task_label="",
+                    source_raw="",
+                    record_index=index,
+                    raw_excerpt=str(item)[:240],
+                    warnings=["item must be an object"],
+                )
+            )
+            continue
+        qid = str(item.get("queue_id") or f"record-{index}")
+        status_raw = str(item.get("status") or "")
+        source_raw = str(item.get("source_file_path") or "")
+        task_label = str(item.get("referenced_task_title") or "")
+        record_gaps = []
+        if "queue_id" not in item:
+            record_gaps.append("missing queue_id")
+        if not status_raw:
+            record_gaps.append("missing status")
+        if not source_raw:
+            record_gaps.append("missing source_file_path")
+        if not task_label:
+            record_gaps.append("missing referenced_task_title")
+        classification = "by-reference" if not record_gaps else "unrecognized"
+        source_path = _normalize_possible_path(source_raw, workspace_root) if source_raw else None
+        records.append(
+            QueueRecord(
+                qid=qid,
+                status_raw=_strip_markdown_ticks(status_raw),
+                classification=classification,
+                task_label=task_label,
+                source_raw=source_raw,
+                source_path=source_path,
+                record_index=index,
+                raw_excerpt=json.dumps(item, ensure_ascii=False)[:240],
+                warnings=record_gaps,
+            )
+        )
+        for gap in record_gaps:
+            gaps.append(f"{qid}: {gap}")
+    return QueueParseResult(records=records, parser_gaps=gaps)
+
+
 def parse_queue(artifact: QueueArtifact, workspace_root: Path) -> QueueParseResult:
     if artifact.path.suffix.lower() == ".md":
         return parse_markdown_queue(artifact.path, workspace_root)
+    if artifact.path.suffix.lower() == ".json":
+        return parse_json_queue(artifact.path, workspace_root)
     return QueueParseResult(parser_gaps=[f"unsupported queue format: {artifact.path.suffix or artifact.path.name}"])
 
 
