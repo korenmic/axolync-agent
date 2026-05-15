@@ -56,7 +56,7 @@
   - Add a Sinq3-style JSON fixture with `Q0001` ids, optional metadata fields, and missing-source examples.
   - Add a Sinq4-style Markdown fixture with completed statuses, inline procedural tasks, and duplicate qids in a history section.
 
-- [ ] 9. Add parser regression tests
+- [x] 9. Add parser regression tests
   - Test discovery priority and graceful no-queue behavior.
   - Test Markdown parsing and section-aware duplicate handling.
   - Test JSON parsing and optional metadata tolerance.
