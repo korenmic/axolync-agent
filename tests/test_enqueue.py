@@ -127,6 +127,28 @@ class EnqueueTests(unittest.TestCase):
             self.assertEqual([task.label for task in check.duplicate_tasks], ["1. Runnable task"])
             self.assertEqual([task.label for task in check.new_tasks], ["2. Other task"])
 
+    def test_enqueue_selection_appends_source_and_inline_records(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            state = enqueue_tasks.discover_queue_state(root)
+            source = root / "spec" / "tasks.md"
+            source.parent.mkdir(parents=True)
+            source.write_text("- [ ] 1. Runnable task\n", encoding="utf-8")
+            selection = enqueue_tasks.resolve_source_selection(
+                root,
+                source_paths=[source],
+                inline_tasks=["context-only task"],
+            )
+
+            result = enqueue_tasks.enqueue_selection(state, selection)
+            queue_text = state.queue_path.read_text(encoding="utf-8")
+
+            self.assertEqual(result.added_qids, ("Q-001", "Q-002"))
+            self.assertIn("- Source: [tasks.md](/", queue_text)
+            self.assertIn("- Task: `1. Runnable task`", queue_text)
+            self.assertIn("- Source: `inline procedural queue task`", queue_text)
+            self.assertIn("- Task: `context-only task`", queue_text)
+
 
 if __name__ == "__main__":
     unittest.main()

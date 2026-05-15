@@ -59,6 +59,14 @@ class DuplicateCheck:
     duplicate_tasks: tuple[SourceTask, ...]
 
 
+@dataclass(frozen=True)
+class EnqueueResult:
+    added_qids: tuple[str, ...]
+    added_count: int
+    skipped_duplicate_count: int
+    skipped_duplicate_labels: tuple[str, ...]
+
+
 class EnqueueInputError(ValueError):
     pass
 
@@ -192,6 +200,71 @@ def filter_duplicate_source_tasks(
         existing_keys.add(key)
         new_tasks.append(task)
     return DuplicateCheck(tuple(new_tasks), tuple(duplicate_tasks))
+
+
+def _markdown_link_path(path: Path) -> str:
+    normalized = str(path.resolve()).replace("\\", "/")
+    if re.match(r"^[A-Za-z]:/", normalized):
+        return f"/{normalized}"
+    return normalized
+
+
+def _format_source_record(qid_number: int, task: SourceTask) -> str:
+    return (
+        f"### Q-{qid_number:03d}\n"
+        "- Status: `queued`\n"
+        f"- Source: [tasks.md]({_markdown_link_path(task.source_path)})\n"
+        f"- Task: `{task.label}`\n"
+    )
+
+
+def _format_inline_record(qid_number: int, task_text: str) -> str:
+    return (
+        f"### Q-{qid_number:03d}\n"
+        "- Status: `queued`\n"
+        "- Source: `inline procedural queue task`\n"
+        f"- Task: `{task_text}`\n"
+    )
+
+
+def _append_queue_records(queue_path: Path, record_blocks: Iterable[str]) -> None:
+    blocks = [block.rstrip() for block in record_blocks]
+    if not blocks:
+        return
+    existing = queue_path.read_text(encoding="utf-8-sig", errors="replace")
+    separator = "\n\n" if existing.rstrip() else ""
+    joined_blocks = "\n\n".join(blocks)
+    queue_path.write_text(
+        f"{existing.rstrip()}{separator}{joined_blocks}\n",
+        encoding="utf-8",
+    )
+
+
+def enqueue_selection(state: QueueState, selection: SourceSelection) -> EnqueueResult:
+    validate_source_selection(selection)
+    source_tasks = select_source_tasks(selection)
+    duplicate_check = filter_duplicate_source_tasks(source_tasks, state.queue_path, state.workspace_root)
+    qid_number = state.next_qid_number
+    record_blocks: list[str] = []
+    added_qids: list[str] = []
+
+    for task in duplicate_check.new_tasks:
+        record_blocks.append(_format_source_record(qid_number, task))
+        added_qids.append(f"Q-{qid_number:03d}")
+        qid_number += 1
+
+    for task_text in selection.inline_tasks:
+        record_blocks.append(_format_inline_record(qid_number, task_text))
+        added_qids.append(f"Q-{qid_number:03d}")
+        qid_number += 1
+
+    _append_queue_records(state.queue_path, record_blocks)
+    return EnqueueResult(
+        added_qids=tuple(added_qids),
+        added_count=len(added_qids),
+        skipped_duplicate_count=len(duplicate_check.duplicate_tasks),
+        skipped_duplicate_labels=tuple(task.label for task in duplicate_check.duplicate_tasks),
+    )
 
 
 def resolve_source_selection(
@@ -346,6 +419,12 @@ def main(argv: Iterable[str] | None = None) -> int:
         if selection.source_paths:
             selected_tasks = select_source_tasks(selection)
             print(f"Selected source tasks: {len(selected_tasks)}")
+        result = enqueue_selection(state, selection)
+        print("")
+        print("Enqueue result:")
+        print(f"- Added: {result.added_count}")
+        print(f"- Added qids: {', '.join(result.added_qids) if result.added_qids else 'none'}")
+        print(f"- Skipped duplicates: {result.skipped_duplicate_count}")
     return 0
 
 

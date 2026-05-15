@@ -33,7 +33,7 @@
   - Leave room for a stronger source task-id if source files expose one later.
   - Report skipped duplicates in the final response.
 
-- [ ] 6. Implement queue record append behavior
+- [x] 6. Implement queue record append behavior
   - Append by-reference records in the established Markdown queue format.
   - Append by-value records with an inline source label when no source file owns the task.
   - Preserve deterministic append order.
