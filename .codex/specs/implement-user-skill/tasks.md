@@ -7,7 +7,7 @@
   - State that the skill is a wrapper over `$tactic` and `$notify`, not a replacement implementation engine.
   - Document that implementation should not start for review, enqueue-only, status-only, build, or planning requests.
 
-- [ ] 2. Define task-source resolution and argument forwarding
+- [x] 2. Define task-source resolution and argument forwarding
   - Document the default source as current workspace undone enqueued tasks.
   - Document explicit implementation target handling.
   - Forward additional arguments to `$tactic` unchanged.

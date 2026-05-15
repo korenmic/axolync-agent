@@ -32,3 +32,16 @@ This skill must not replace or reinterpret TACTIC. TACTIC remains responsible fo
 5. Push committed work to the agreed/current/master branch as context dictates.
 6. Notify when the push completes.
 
+## Task Source And TACTIC Arguments
+
+When no extra target or mode is supplied, treat the task source as the current workspace's undone enqueued tasks.
+
+When the user supplies additional arguments after `$implement`, forward them to `$tactic` unchanged. Do not parse new implementation modes in this skill; `$tactic` owns mode inference and task-source semantics.
+
+Examples:
+
+```text
+$implement
+$implement autonomous
+$implement autonomous --only Q-100
+```
