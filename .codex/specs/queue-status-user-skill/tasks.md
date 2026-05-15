@@ -26,7 +26,7 @@
   - Classify valid JSON records as by-reference.
   - Report missing required JSON fields as parser gaps.
 
-- [ ] 5. Implement status normalization and counting
+- [x] 5. Implement status normalization and counting
   - Normalize `done` and `completed` to done.
   - Normalize `queued` to ready-undone.
   - Normalize `in_progress` to active-undone.

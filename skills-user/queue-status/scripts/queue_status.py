@@ -23,6 +23,7 @@ class QueueArtifact:
 class QueueRecord:
     qid: str
     status_raw: str
+    status_bucket: str
     classification: str
     task_label: str
     source_raw: str
@@ -46,6 +47,21 @@ class QueueReport:
     additional_artifacts: list[QueueArtifact] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
     parse_result: QueueParseResult | None = None
+
+
+def normalize_status(value: str) -> str:
+    normalized = value.strip().strip("`").strip().lower().replace("-", "_")
+    if normalized in {"done", "completed"}:
+        return "done"
+    if normalized == "queued":
+        return "ready"
+    if normalized == "in_progress":
+        return "active"
+    if normalized == "blocked":
+        return "blocked"
+    if normalized == "skipped":
+        return "skipped"
+    return "unrecognized_status"
 
 
 def _resolve_path(value: str | Path, base: Path | None = None) -> Path:
@@ -175,6 +191,7 @@ def _parse_markdown_records(section_text: str, workspace_root: Path) -> tuple[li
             QueueRecord(
                 qid=qid,
                 status_raw=_strip_markdown_ticks(status_raw or ""),
+                status_bucket=normalize_status(status_raw or ""),
                 classification=classification,
                 task_label=task_label,
                 source_raw=source_raw or "",
@@ -224,6 +241,7 @@ def parse_json_queue(path: Path, workspace_root: Path) -> QueueParseResult:
                 QueueRecord(
                     qid=f"record-{index}",
                     status_raw="",
+                    status_bucket="unrecognized_status",
                     classification="unrecognized",
                     task_label="",
                     source_raw="",
@@ -252,6 +270,7 @@ def parse_json_queue(path: Path, workspace_root: Path) -> QueueParseResult:
             QueueRecord(
                 qid=qid,
                 status_raw=_strip_markdown_ticks(status_raw),
+                status_bucket=normalize_status(status_raw),
                 classification=classification,
                 task_label=task_label,
                 source_raw=source_raw,
@@ -287,6 +306,31 @@ def _count_classifications(records: list[QueueRecord]) -> dict[str, int]:
     return counts
 
 
+def _count_statuses(records: list[QueueRecord]) -> dict[str, int]:
+    counts = {
+        "done": 0,
+        "ready": 0,
+        "active": 0,
+        "blocked": 0,
+        "skipped": 0,
+        "unrecognized_status": 0,
+        "undone_total": 0,
+    }
+    for record in records:
+        counts[record.status_bucket] = counts.get(record.status_bucket, 0) + 1
+        if record.status_bucket in {"ready", "active", "blocked", "unrecognized_status"}:
+            counts["undone_total"] += 1
+    return counts
+
+
+def _unknown_status_gaps(records: list[QueueRecord]) -> list[str]:
+    return [
+        f"{record.qid}: unrecognized status {record.status_raw!r}"
+        for record in records
+        if record.status_bucket == "unrecognized_status"
+    ]
+
+
 def format_report(report: QueueReport) -> str:
     lines = ["# Queue Status", ""]
     lines.append(f"Workspace: {report.workspace_root}")
@@ -303,12 +347,23 @@ def format_report(report: QueueReport) -> str:
     if report.parse_result is not None:
         records = report.parse_result.records
         class_counts = _count_classifications(records)
+        status_counts = _count_statuses(records)
         lines.append("")
         lines.append("Counts:")
         lines.append(f"- Total records: {len(records)}")
+        lines.append(f"- Done: {status_counts.get('done', 0)}")
+        lines.append(f"- Undone: {status_counts.get('undone_total', 0)}")
+        lines.append(f"- Ready: {status_counts.get('ready', 0)}")
+        lines.append(f"- Active: {status_counts.get('active', 0)}")
+        lines.append(f"- Blocked: {status_counts.get('blocked', 0)}")
+        lines.append(f"- Skipped: {status_counts.get('skipped', 0)}")
+        lines.append(f"- Unknown status: {status_counts.get('unrecognized_status', 0)}")
         lines.append(f"- By-reference: {class_counts.get('by-reference', 0)}")
         lines.append(f"- By-value: {class_counts.get('by-value', 0)}")
         lines.append(f"- Unrecognized: {class_counts.get('unrecognized', 0)}")
+        for gap in _unknown_status_gaps(records):
+            if gap not in report.parse_result.parser_gaps:
+                report.parse_result.parser_gaps.append(gap)
         if report.parse_result.warnings:
             lines.append("")
             lines.append("Queue structure warnings:")
