@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "workspace_root": "SANITIZED",
+  "queue_kind": "reference_only_execution_queue",
+  "append_only_order": true,
+  "next_queue_id": 4,
+  "created_at": "2026-04-03T08:02:56+03:00",
+  "updated_at": "2026-05-14T14:45:11+00:00",
+  "notes": "Sanitized queue-status fixture.",
+  "items": [
+    {
+      "queue_id": "Q0001",
+      "status": "done",
+      "source_file_path": "fixtures/sinq3-json/tasks.md",
+      "referenced_task_title": "Implement JSON queue fixture support.",
+      "notes": "done reference"
+    },
+    {
+      "queue_id": "Q0002",
+      "status": "done",
+      "source_file_path": "fixtures/sinq3-json/missing-tasks.md",
+      "referenced_task_title": "Missing reference example.",
+      "completedAt": "2026-05-14T14:45:11+00:00"
+    },
+    {
+      "queue_id": "Q0003",
+      "status": "blocked",
+      "source_file_path": "fixtures/sinq3-json/tasks.md",
+      "referenced_task_title": "Blocked reference example.",
+      "note": "blocked reference"
+    }
+  ]
+}

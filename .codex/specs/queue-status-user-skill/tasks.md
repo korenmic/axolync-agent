@@ -50,7 +50,7 @@
   - Print parser gaps with qid or record index, raw excerpt, and parser reason.
   - Do not write a persisted machine-readable queue-status output file by default.
 
-- [ ] 8. Add sanitized parser fixtures from observed queues
+- [x] 8. Add sanitized parser fixtures from observed queues
   - Add a Sinq-style Markdown fixture with done by-reference records and a by-value review task.
   - Add a Sinq2-style Markdown fixture with done and queued by-reference records.
   - Add a Sinq3-style JSON fixture with `Q0001` ids, optional metadata fields, and missing-source examples.
