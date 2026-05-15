@@ -1,6 +1,6 @@
 # Tasks
 
-- [ ] 1. Create the `queue-status` user skill skeleton
+- [x] 1. Create the `queue-status` user skill skeleton
   - Add `axolync-agent/skills-user/queue-status/SKILL.md`.
   - Document `$queue-status` as the canonical invocation.
   - State that the skill is read-only and must not execute or mutate queued tasks.
