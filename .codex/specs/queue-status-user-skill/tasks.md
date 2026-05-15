@@ -42,7 +42,7 @@
   - Optionally inspect resolvable `tasks.md` files for queue/source status drift.
   - Ensure un-enqueued tasks in referenced files never affect queue-status counts.
 
-- [ ] 7. Implement human-readable output
+- [x] 7. Implement human-readable output
   - Print the queue path and discovery method.
   - Print concise count summaries.
   - Print classification summaries.

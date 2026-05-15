@@ -393,11 +393,26 @@ def _reference_diagnostics(records: list[QueueRecord]) -> tuple[list[QueueRecord
     return missing, drift
 
 
+def _record_warning_gaps(records: list[QueueRecord]) -> list[str]:
+    gaps = []
+    for record in records:
+        for warning in record.warnings:
+            gaps.append(f"{record.qid}: {warning}; excerpt={record.raw_excerpt!r}")
+    return gaps
+
+
 def format_report(report: QueueReport) -> str:
     lines = ["# Queue Status", ""]
+    lines.append("Queue source:")
     lines.append(f"Workspace: {report.workspace_root}")
     if report.active_queue is None:
         lines.append("Queue: no initiated queue found")
+        if report.warnings:
+            lines.append("")
+            lines.append("Warnings:")
+            for warning in report.warnings:
+                lines.append(f"- {warning}")
+        return "\n".join(lines)
     else:
         lines.append(f"Queue: {report.active_queue.path}")
         lines.append(f"Discovery: {report.active_queue.discovery_method}")
@@ -411,7 +426,7 @@ def format_report(report: QueueReport) -> str:
         class_counts = _count_classifications(records)
         status_counts = _count_statuses(records)
         lines.append("")
-        lines.append("Counts:")
+        lines.append("Status counts:")
         lines.append(f"- Total records: {len(records)}")
         lines.append(f"- Done: {status_counts.get('done', 0)}")
         lines.append(f"- Undone: {status_counts.get('undone_total', 0)}")
@@ -420,6 +435,8 @@ def format_report(report: QueueReport) -> str:
         lines.append(f"- Blocked: {status_counts.get('blocked', 0)}")
         lines.append(f"- Skipped: {status_counts.get('skipped', 0)}")
         lines.append(f"- Unknown status: {status_counts.get('unrecognized_status', 0)}")
+        lines.append("")
+        lines.append("Classification counts:")
         lines.append(f"- By-reference: {class_counts.get('by-reference', 0)}")
         lines.append(f"- By-value: {class_counts.get('by-value', 0)}")
         lines.append(f"- Unrecognized: {class_counts.get('unrecognized', 0)}")
@@ -435,6 +452,9 @@ def format_report(report: QueueReport) -> str:
             sample = ", ".join(record.qid for record in drift_refs[:8])
             lines.append(f"- Drift sample: {sample}")
         for gap in _unknown_status_gaps(records):
+            if gap not in report.parse_result.parser_gaps:
+                report.parse_result.parser_gaps.append(gap)
+        for gap in _record_warning_gaps(records):
             if gap not in report.parse_result.parser_gaps:
                 report.parse_result.parser_gaps.append(gap)
         if report.parse_result.warnings:
