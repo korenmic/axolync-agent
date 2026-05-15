@@ -37,6 +37,7 @@ Axolync agents often use queued task execution across multiple Sinq workspaces. 
    - Also detect legacy/alternate JSON queues such as `<workspace-root>/.codex/tmp/execution-queue.json`.
    - Prefer the Markdown queue when both Markdown and JSON queues exist, but report the lower-priority queue as an additional discovered queue artifact.
    - Treat a missing queue file as "no initiated queue" rather than as an error.
+   - Parse JSON queues with top-level metadata and an `items` array.
    - Emit a stable machine-readable JSON summary.
    - Emit a concise human-readable table or bullet summary for interactive use.
 
@@ -45,6 +46,8 @@ Axolync agents often use queued task execution across multiple Sinq workspaces. 
    - `by-value`: the record contains the implementation task inline and does not depend on an external task source.
    - `unrecognized`: the script cannot safely classify the record.
    - Recognize current by-value source styles including `inline procedural queue task` and backticked labels such as `` `by-value review task` ``.
+   - Recognize JSON reference-only queue records with `queue_id`, `status`, `source_file_path`, and `referenced_task_title`.
+   - Treat JSON `notes`, `note`, `completedAt`, and `completed_at` as optional metadata, not classification requirements.
 
 4. Count task state.
    - Total queued records.
@@ -106,6 +109,15 @@ Observed path/reference shapes:
 - Markdown links may use `C:/...`, `/C:/...`, or `/c:/...`.
 - Referenced sources may no longer exist locally if the workspace has moved branches or compacted old temp work. This should be reported as missing reference evidence, not as a parser crash.
 - Authoritative task files use checklist syntax like `- [x] 1. ...`, `- [ ] ...`, and backlog checklist entries without numeric task prefixes.
+
+Observed Sinq3 JSON queue shape:
+
+- Top-level keys include `version`, `workspace_root`, `queue_kind`, `append_only_order`, `next_queue_id`, `created_at`, `updated_at`, `notes`, and `items`.
+- `queue_kind` was `reference_only_execution_queue`.
+- Items use ids like `Q0001`, not Markdown ids like `Q-001`.
+- Required item fields observed: `queue_id`, `status`, `source_file_path`, and `referenced_task_title`.
+- Optional item fields observed: `notes`, `note`, `completedAt`, and `completed_at`.
+- The inspected JSON queue had 120 items, all `done`, all by-reference, and 8 missing referenced task-source files. Missing sources should be visible in output but should not prevent status counting.
 
 ## Open Questions
 
