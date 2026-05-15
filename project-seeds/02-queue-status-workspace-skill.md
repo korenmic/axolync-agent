@@ -2,7 +2,7 @@
 
 ## Summary
 
-Create a `$queue-status` workspace skill for workspaces with an initiated task queue. The skill should report queue health without starting implementation: how many tasks exist, how many are done, how many remain ready/undone, and whether queued records are by-reference tasks or inline by-value tasks.
+Create a `$queue-status` user skill in the agents repo for workspaces with an initiated task queue. The skill should report queue health without starting implementation: how many tasks exist, how many are done, how many remain ready/undone, and whether queued records are by-reference tasks or inline by-value tasks.
 
 The goal is to make queue state auditable before a tactic run, after a tactic run, or during handoff between agents.
 
@@ -19,17 +19,21 @@ Axolync agents often use queued task execution across multiple Sinq workspaces. 
 
 ## Technical Constraints
 
-- Implement as an agents repo workspace skill, not a global user skill.
+- Implement under `axolync-agent/skills-user/queue-status`, not under `skills-workspace`.
+- The skill may later be installed into a Codex user skill directory when explicitly requested, but this seed only defines the agents repo source.
 - Use a script for deterministic queue discovery, parsing, counting, and classification.
 - Prefer current workspace queue state as the default input.
 - Support inspecting other local Sinq workspaces only as read-only evidence when explicitly requested.
 - Do not start, modify, complete, or reorder queued tasks.
 - Do not treat unrecognized records as successful parsing. Return them to the AI with enough raw context and parser reason to classify manually.
 - Do not assume all queue records point to `tasks.md`. Inline by-value tasks are valid and must be counted distinctly.
+- If no queue is found, fail gracefully with a clear "no initiated queue found" result, not a stack trace or hard error.
 
 ## Proposed Scope
 
-1. Add a `queue-status` skill with `$queue-status` as the primary invocation.
+1. Add a `queue-status` user skill with `$queue-status` as the primary invocation.
+   - Place the skill source at `axolync-agent/skills-user/queue-status`.
+   - Include invocation aliases if useful, but keep `$queue-status` as the canonical trigger.
 
 2. Add a shared script that discovers and parses the current workspace queue.
    - Locate the active queue file or queue directory using the existing queue/tactic conventions.
@@ -41,7 +45,13 @@ Axolync agents often use queued task execution across multiple Sinq workspaces. 
    - Emit a stable machine-readable JSON summary.
    - Emit a concise human-readable table or bullet summary for interactive use.
 
-3. Classify every queue record.
+3. Allow AI/context-assisted queue path fallback.
+   - Script discovery should cover known conventions, hard-coded candidates, and lightweight local search where appropriate.
+   - If script discovery does not find a queue, the skill workflow should allow the agent to use already-known context from the current conversation or workspace notes, such as a user-provided queue path.
+   - Context-provided queue paths must still be validated as existing files before parsing.
+   - The final report should state whether the queue path came from script discovery, explicit user/context fallback, or was not found.
+
+4. Classify every queue record.
    - `by-reference`: the record points to a task in a specific `tasks.md` or equivalent task source.
    - `by-value`: the record contains the implementation task inline and does not depend on an external task source.
    - `unrecognized`: the script cannot safely classify the record.
@@ -49,7 +59,7 @@ Axolync agents often use queued task execution across multiple Sinq workspaces. 
    - Recognize JSON reference-only queue records with `queue_id`, `status`, `source_file_path`, and `referenced_task_title`.
    - Treat JSON `notes`, `note`, `completedAt`, and `completed_at` as optional metadata, not classification requirements.
 
-4. Count task state.
+5. Count task state.
    - Total queued records.
    - Done/completed records.
    - Undone/ready records.
@@ -57,7 +67,7 @@ Axolync agents often use queued task execution across multiple Sinq workspaces. 
    - By-value done/undone.
    - Unrecognized records.
 
-5. Resolve referenced task state when possible.
+6. Resolve referenced task state when possible.
    - For `by-reference` records, inspect the referenced task source and compare queue-local done state with referenced task checkbox/status state.
    - Report disagreements instead of silently choosing one state.
    - Treat referenced task-source state as the preferred authority when the target is resolvable.
@@ -65,28 +75,28 @@ Axolync agents often use queued task execution across multiple Sinq workspaces. 
    - Support `.codex/specs/.../tasks.md`, `.kiro/specs/.../tasks.md`, and `backlog/tasks.md` references.
    - Report missing referenced task sources separately from unrecognized queue records.
 
-6. Return parser gaps to the AI.
+7. Return parser gaps to the AI.
    - Include raw record text or a compact excerpt.
    - Include the parser reason.
    - Include the queue file path and record index.
    - Make it easy for the AI to classify gaps and propose parser hardening.
 
-7. Provide cross-workspace diagnostic mode.
+8. Provide cross-workspace diagnostic mode.
    - Allow explicit read-only inspection of Sinq, Sinq2, Sinq3, and Sinq4 queue states for parser validation.
    - Never modify those workspaces.
 
-8. Avoid double-counting compacted history and summary sections.
+9. Avoid double-counting compacted history and summary sections.
    - Parse records under the active `## Queued Items` section.
    - Stop or switch mode at the next level-2 heading such as `## Most Recent Completed Items`.
    - If duplicate `Q-###` ids are observed, report them as history/summary duplication or corruption instead of silently counting them twice.
 
-9. Normalize observed status labels.
+10. Normalize observed status labels.
    - Treat `done` and `completed` as completed states.
    - Treat `queued` as ready/undone.
    - Reserve explicit buckets for `in_progress`, `blocked`, and `skipped` even if they are not present in the current sample.
    - Preserve unknown status labels in the JSON output and the AI gap report.
 
-10. Add deterministic fixture coverage from observed real queues.
+11. Add deterministic fixture coverage from observed real queues.
    - Create copied or sanitized test fixtures derived from the observed Sinq, Sinq2, Sinq3, and Sinq4 queue files.
    - Do not make automated tests depend on live `C:/Users/.../Sinq*` paths existing.
    - Fixture coverage must prove parsing for Markdown local-task queues, JSON execution queues, status normalization, by-reference records, by-value records, missing referenced sources, and section-aware duplicate/history handling.
