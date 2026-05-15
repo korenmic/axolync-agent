@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import argparse
 import re
+import subprocess
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
@@ -267,6 +269,23 @@ def enqueue_selection(state: QueueState, selection: SourceSelection) -> EnqueueR
     )
 
 
+def queue_status_script_path() -> Path:
+    return Path(__file__).resolve().parents[2] / "queue-status" / "scripts" / "queue_status.py"
+
+
+def run_queue_status_verbose(workspace_root: Path) -> str:
+    script = queue_status_script_path()
+    if not script.exists():
+        raise EnqueueInputError(f"queue-status verbose is unavailable; missing script: {script}")
+    completed = subprocess.run(
+        [sys.executable, str(script), "--workspace-root", str(workspace_root), "verbose"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return completed.stdout.rstrip()
+
+
 def resolve_source_selection(
     workspace_root: Path,
     source_paths: Iterable[str | Path] | None = None,
@@ -394,6 +413,11 @@ def build_parser() -> argparse.ArgumentParser:
         default=[],
         help="Context-only by-value task text with no authoritative source file.",
     )
+    parser.add_argument(
+        "--skip-status",
+        action="store_true",
+        help="Skip final queue-status verbose output. Intended for narrow tests only.",
+    )
     return parser
 
 
@@ -425,6 +449,13 @@ def main(argv: Iterable[str] | None = None) -> int:
         print(f"- Added: {result.added_count}")
         print(f"- Added qids: {', '.join(result.added_qids) if result.added_qids else 'none'}")
         print(f"- Skipped duplicates: {result.skipped_duplicate_count}")
+        if not args.skip_status:
+            print("")
+            print(run_queue_status_verbose(state.workspace_root))
+        print("")
+        print(f"Added {result.added_count} undone tasks in this enqueue session.")
+        if result.skipped_duplicate_count:
+            print(f"Skipped {result.skipped_duplicate_count} duplicate tasks.")
     return 0
 
 

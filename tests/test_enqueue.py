@@ -1,7 +1,9 @@
 import importlib.util
+import io
 import sys
 import tempfile
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
 
 
@@ -148,6 +150,27 @@ class EnqueueTests(unittest.TestCase):
             self.assertIn("- Task: `1. Runnable task`", queue_text)
             self.assertIn("- Source: `inline procedural queue task`", queue_text)
             self.assertIn("- Task: `context-only task`", queue_text)
+
+    def test_main_prints_queue_status_and_manual_added_note(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "tasks.md"
+            source.write_text("- [ ] 1. Runnable task\n", encoding="utf-8")
+            output = io.StringIO()
+
+            with redirect_stdout(output):
+                exit_code = enqueue_tasks.main([
+                    "--workspace-root",
+                    str(root),
+                    "--task-source",
+                    str(source),
+                ])
+
+            rendered = output.getvalue()
+            self.assertEqual(exit_code, 0)
+            self.assertIn("# Queue Status", rendered)
+            self.assertIn("Undone records:", rendered)
+            self.assertIn("Added 1 undone tasks in this enqueue session.", rendered)
 
 
 if __name__ == "__main__":

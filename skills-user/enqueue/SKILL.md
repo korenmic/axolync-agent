@@ -47,6 +47,8 @@ Skipped D duplicate tasks.
 
 Omit the duplicate line when `D` is zero.
 
+If queue-status verbose is unavailable, report that limitation clearly instead of claiming a complete enqueue/status handoff.
+
 ## Queue Record Format
 
 By-reference task:
@@ -79,4 +81,3 @@ Baseline identity:
 This source task identity is different from `qid`, which identifies the queue record.
 
 Do not use broad fuzzy matching. Normalize only obvious Markdown wrappers, checklist markers, backticks, and whitespace.
-

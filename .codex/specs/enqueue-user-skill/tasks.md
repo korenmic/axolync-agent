@@ -39,7 +39,7 @@
   - Preserve deterministic append order.
   - Track how many undone tasks were added in the current enqueue session.
 
-- [ ] 7. Integrate queue-status verbose reporting
+- [x] 7. Integrate queue-status verbose reporting
   - Invoke `$queue-status verbose` or the equivalent parser command after enqueueing.
   - Clearly report when verbose queue-status support is unavailable.
   - After queue-status output, manually state how many undone tasks were added in this enqueue session.
