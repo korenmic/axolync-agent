@@ -33,6 +33,7 @@ The script accepts:
 - `--workspace-root <path>`: optional, defaults to the current working directory.
 - `--queue-path <path>`: optional explicit path, used for context fallback or direct testing.
 - `--diagnose-known-sinq-roots`: optional manual-only mode for local cross-workspace parser diagnostics.
+- `verbose`: optional human-output mode that expands each enqueued undone queue record.
 
 Discovery order:
 
@@ -173,8 +174,12 @@ Suggested sections:
 - Reference diagnostics: missing sources and drift count.
 - Parser gaps: compact list of unrecognized records/statuses.
 - Additional discovered artifacts: lower-priority queue files found but not used.
+- Undone: always last, with the count elaboration at the bottom of the report.
+- Verbose undone details: when requested, a compact per-task list immediately adjacent to the bottom undone section.
 
 The script may compute structured objects internally, but it does not persist a separate machine-readable queue-status file by default.
+
+Verbose mode remains human-only. Each undone task summary should include qid, normalized status, classification, and a compact task label or source reference. It must not include done tasks or un-enqueued source tasks.
 
 ## Testing
 
@@ -202,3 +207,4 @@ Fixtures must be sanitized and deterministic. They must not require live `C:/Use
 - The design still permits internal structured data because parser code needs a normalized model, but that data is not a persisted output artifact.
 - The design prevents un-enqueued source tasks from affecting counts.
 - The design treats live Sinq cross-workspace inspection as manual diagnostics only, not CI dependency.
+- The verbose refinement keeps `undone:` details adjacent by placing all undone elaboration at the bottom of the report.

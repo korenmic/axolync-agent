@@ -105,3 +105,16 @@ The source seed is `project-seeds/02-queue-status-workspace-skill.md`.
 2. WHEN tests run in CI THEN they SHALL NOT depend on live `C:/Users/.../Sinq*` paths existing.
 3. WHEN fixture tests run THEN they SHALL cover Markdown queues, JSON queues, status normalization, by-reference records, by-value records, missing referenced sources, and section-aware duplicate/history handling.
 4. WHEN live cross-workspace inspection is needed THEN it SHALL remain a manual diagnostic mode separate from deterministic CI fixtures.
+
+### Requirement 9: Verbose Undone Output
+
+**User Story:** As a user inspecting a queue with remaining work, I want an optional verbose mode that summarizes each undone queued task next to the undone count, so I can see what remains without manually opening the queue file.
+
+#### Acceptance Criteria
+
+1. WHEN queue-status is invoked with a `verbose` argument THEN the skill SHALL include a compact per-task summary for each enqueued undone queue record.
+2. WHEN verbose undone summaries are printed THEN each summary SHALL include the qid, normalized status, classification, and a compact task label or reference.
+3. WHEN queue-status prints human output in any mode THEN the `undone:` elaboration SHALL appear at the bottom of the report.
+4. WHEN verbose mode is active THEN the expanded undone-task list SHALL be adjacent to the bottom `undone:` elaboration.
+5. WHEN verbose mode is inactive THEN queue-status SHALL keep the report concise and SHALL NOT print the per-task undone expansion.
+6. WHEN verbose mode runs THEN it SHALL remain read-only and SHALL NOT persist a second machine-readable queue-status artifact.

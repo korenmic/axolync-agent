@@ -102,6 +102,17 @@ Axolync agents often use queued task execution across multiple Sinq workspaces. 
    - Fixture coverage must prove parsing for Markdown local-task queues, JSON execution queues, status normalization, by-reference records, by-value records, missing referenced sources, and section-aware duplicate/history handling.
    - Keep live cross-workspace inspection as a manual diagnostic mode, separate from CI fixtures.
 
+12. Add an optional verbose undone-task expansion.
+   - Support a `verbose` argument for `$queue-status`.
+   - When verbose is requested, include a short per-task summary for each enqueued undone record.
+   - Summaries should include qid, normalized status, classification, and a compact task label or reference.
+   - The verbose expansion remains human-readable only and must not persist a second machine-readable artifact.
+
+13. Keep undone elaboration at the bottom of the report.
+   - Move the `undone:` elaboration to the bottom of the output in all modes.
+   - When `verbose` is supplied, place the per-task undone expansion adjacent to that bottom `undone:` section.
+   - Keep top-level counts concise so the expanded undone list is not separated from the count it explains.
+
 ## Inspection Findings
 
 The first inspection pass looked at workspace-local queues in:
@@ -143,6 +154,8 @@ Observed Sinq3 JSON queue shape:
 - Queue-local status is authoritative for queue-status counts. Referenced `tasks.md` files may be inspected as optional evidence and drift diagnostics, but they must not cause un-enqueued tasks to affect queue-status output.
 - A queue item id (`qid`) is the queue-local record identity, such as `Q-001` or `Q0001`. It identifies the queued record, not the referenced source task.
 - `$queue-status` should output concise human-readable text only by default. It does not need to store or emit a second machine-data representation because the queue file itself is the machine-readable source.
+- `$queue-status verbose` should expand only enqueued undone records with compact per-task summaries.
+- The `undone:` elaboration should always appear at the bottom of the human report, and verbose undone-task details should be adjacent to that bottom section.
 - Summary/history sections should be ignored for active counts, but scanned enough to warn about duplicate ids or suspicious overlap.
 
 ## Open Questions

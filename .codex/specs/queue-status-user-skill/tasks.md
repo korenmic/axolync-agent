@@ -70,3 +70,16 @@
   - Run a manual local check against the current workspace queue if available.
   - Verify the skill docs clearly state read-only behavior, queue-local count authority, and context fallback.
   - Confirm the implementation stops after reporting status and does not start TACTIC or queue execution.
+
+- [ ] 11. Add verbose undone-task summaries
+  - Keep the change in the existing `axolync-agent/skills-user/queue-status` user skill; do not move queue-status behavior into workspace skills.
+  - Support a `verbose` argument for the queue-status skill/script.
+  - In verbose mode, print one compact summary for each enqueued undone queue record.
+  - Include qid, normalized status, classification, and a compact task label or reference for each undone record.
+  - Keep verbose output human-readable only and do not persist a second machine-readable artifact.
+
+- [ ] 12. Move undone elaboration to the bottom of the report
+  - Reorder human output so the `undone:` elaboration always appears at the bottom.
+  - Place verbose undone-task expansion adjacent to the bottom `undone:` section when `verbose` is supplied.
+  - Keep top-level counts concise so the expanded details are not separated from the count they explain.
+  - Add regression coverage for default and verbose output ordering.
