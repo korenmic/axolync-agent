@@ -33,6 +33,8 @@ Axolync agents often use queued task execution across multiple Sinq workspaces. 
 
 2. Add a shared script that discovers and parses the current workspace queue.
    - Locate the active queue file or queue directory using the existing queue/tactic conventions.
+   - Treat `<workspace-root>/.codex/local-task-queue.md` as the current established queue file convention when present.
+   - Treat a missing queue file as "no initiated queue" rather than as an error.
    - Emit a stable machine-readable JSON summary.
    - Emit a concise human-readable table or bullet summary for interactive use.
 
@@ -40,6 +42,7 @@ Axolync agents often use queued task execution across multiple Sinq workspaces. 
    - `by-reference`: the record points to a task in a specific `tasks.md` or equivalent task source.
    - `by-value`: the record contains the implementation task inline and does not depend on an external task source.
    - `unrecognized`: the script cannot safely classify the record.
+   - Recognize current by-value source styles including `inline procedural queue task` and backticked labels such as `` `by-value review task` ``.
 
 4. Count task state.
    - Total queued records.
@@ -53,6 +56,9 @@ Axolync agents often use queued task execution across multiple Sinq workspaces. 
    - For `by-reference` records, inspect the referenced task source and compare queue-local done state with referenced task checkbox/status state.
    - Report disagreements instead of silently choosing one state.
    - Treat referenced task-source state as the preferred authority when the target is resolvable.
+   - Canonicalize Windows Markdown-link paths that appear as `C:/...`, `/C:/...`, and `/c:/...`.
+   - Support `.codex/specs/.../tasks.md`, `.kiro/specs/.../tasks.md`, and `backlog/tasks.md` references.
+   - Report missing referenced task sources separately from unrecognized queue records.
 
 6. Return parser gaps to the AI.
    - Include raw record text or a compact excerpt.
@@ -64,6 +70,41 @@ Axolync agents often use queued task execution across multiple Sinq workspaces. 
    - Allow explicit read-only inspection of Sinq, Sinq2, Sinq3, and Sinq4 queue states for parser validation.
    - Never modify those workspaces.
 
+8. Avoid double-counting compacted history and summary sections.
+   - Parse records under the active `## Queued Items` section.
+   - Stop or switch mode at the next level-2 heading such as `## Most Recent Completed Items`.
+   - If duplicate `Q-###` ids are observed, report them as history/summary duplication or corruption instead of silently counting them twice.
+
+9. Normalize observed status labels.
+   - Treat `done` and `completed` as completed states.
+   - Treat `queued` as ready/undone.
+   - Reserve explicit buckets for `in_progress`, `blocked`, and `skipped` even if they are not present in the current sample.
+   - Preserve unknown status labels in the JSON output and the AI gap report.
+
+## Inspection Findings
+
+The first inspection pass looked at workspace-local queues in:
+
+- `C:/Users/koren/src/Sinq`
+- `C:/Users/koren/src/Sinq2`
+- `C:/Users/koren/src/Sinq3`
+- `C:/Users/koren/src/Sinq4`
+
+Observed queue state:
+
+- `Sinq`, `Sinq2`, and `Sinq4` use `.codex/local-task-queue.md`.
+- `Sinq3` currently has no `.codex/local-task-queue.md`; the skill should report that cleanly.
+- `Sinq` had hundreds of completed records, mostly by-reference, plus one by-value review task using source `` `by-value review task` ``.
+- `Sinq2` had a mix of `done` and `queued` records, all by-reference, with references into `.kiro/specs/.../tasks.md` and `backlog/tasks.md`.
+- `Sinq4` had completed records, by-reference records, and inline procedural records using `Source: inline procedural queue task`.
+- `Sinq4` also contained duplicated `Q-169` and `Q-170` headings in a later `## Most Recent Completed Items` section, so the parser must be section-aware.
+
+Observed path/reference shapes:
+
+- Markdown links may use `C:/...`, `/C:/...`, or `/c:/...`.
+- Referenced sources may no longer exist locally if the workspace has moved branches or compacted old temp work. This should be reported as missing reference evidence, not as a parser crash.
+- Authoritative task files use checklist syntax like `- [x] 1. ...`, `- [ ] ...`, and backlog checklist entries without numeric task prefixes.
+
 ## Open Questions
 
 - What is the exact active queue file/directory convention across current Sinq workspaces?
@@ -71,3 +112,4 @@ Axolync agents often use queued task execution across multiple Sinq workspaces. 
 - Should blocked tasks count as undone, or should they be reported in a separate blocked bucket?
 - Should by-reference completion be authoritative from the queue record, the referenced `tasks.md`, or both with mismatch reporting?
 - Should `$queue-status` output JSON by default, human text by default, or both?
+- Should summary/history sections be parsed into a separate history bucket, or ignored except for duplicate/corruption warnings?
