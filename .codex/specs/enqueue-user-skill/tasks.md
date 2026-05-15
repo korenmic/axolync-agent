@@ -19,7 +19,7 @@
   - Stop for clarification when the intended task set is ambiguous.
   - Avoid broad scanning for unrelated unchecked tasks.
 
-- [ ] 4. Implement source task parsing and undone filtering
+- [x] 4. Implement source task parsing and undone filtering
   - Parse Markdown checklist tasks from spec and backlog `tasks.md` files.
   - Capture source path, task number/title, task text, and checked state.
   - Queue unchecked tasks by default.

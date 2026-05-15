@@ -66,6 +66,44 @@ class EnqueueTests(unittest.TestCase):
             with self.assertRaises(enqueue_tasks.EnqueueInputError):
                 enqueue_tasks.validate_source_selection(selection)
 
+    def test_parse_source_tasks_captures_checked_state_and_numbers(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp) / "tasks.md"
+            source.write_text(
+                "- [x] 1. Finished task\n"
+                "- [ ] 2. Runnable task\n"
+                "- [ ] Backlog item without number\n",
+                encoding="utf-8",
+            )
+
+            tasks = enqueue_tasks.parse_source_tasks(source)
+
+            self.assertEqual([task.label for task in tasks], [
+                "1. Finished task",
+                "2. Runnable task",
+                "Backlog item without number",
+            ])
+            self.assertEqual([task.checked for task in tasks], [True, False, False])
+
+    def test_select_source_tasks_filters_done_and_specific_selectors(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp) / "tasks.md"
+            source.write_text(
+                "- [x] 1. Finished task\n"
+                "- [ ] 2. Runnable task\n"
+                "- [ ] 3. Other task\n",
+                encoding="utf-8",
+            )
+            selection = enqueue_tasks.resolve_source_selection(
+                Path(tmp),
+                source_paths=[source],
+                task_selectors=["2"],
+            )
+
+            selected = enqueue_tasks.select_source_tasks(selection)
+
+            self.assertEqual([task.label for task in selected], ["2. Runnable task"])
+
 
 if __name__ == "__main__":
     unittest.main()

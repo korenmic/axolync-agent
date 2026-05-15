@@ -40,6 +40,19 @@ class SourceSelection:
     inline_tasks: tuple[str, ...]
 
 
+@dataclass(frozen=True)
+class SourceTask:
+    source_path: Path
+    task_number: str | None
+    text: str
+    checked: bool
+    line_number: int
+
+    @property
+    def label(self) -> str:
+        return f"{self.task_number}. {self.text}" if self.task_number else self.text
+
+
 class EnqueueInputError(ValueError):
     pass
 
@@ -103,6 +116,13 @@ def _normalize_selector(value: str) -> str:
     return re.sub(r"\s+", " ", value.strip().strip("`")).strip()
 
 
+def normalize_task_identity(value: str) -> str:
+    value = value.strip().strip("`").strip()
+    value = re.sub(r"^\s*[-*]\s+\[[ xX]\]\s*", "", value)
+    value = re.sub(r"\s+", " ", value)
+    return value.rstrip(".").lower()
+
+
 def resolve_source_selection(
     workspace_root: Path,
     source_paths: Iterable[str | Path] | None = None,
@@ -141,6 +161,63 @@ def validate_source_selection(selection: SourceSelection) -> None:
     missing_paths = [str(path) for path in selection.source_paths if not path.exists()]
     if missing_paths:
         raise EnqueueInputError(f"task source path does not exist: {', '.join(missing_paths)}")
+
+
+TASK_LINE_RE = re.compile(r"^\s*[-*]\s+\[([ xX])\]\s+(.+?)\s*$")
+TASK_NUMBER_RE = re.compile(r"^(\d+(?:\.\d+)*)\.\s+(.+)$")
+
+
+def parse_source_tasks(source_path: Path) -> list[SourceTask]:
+    tasks: list[SourceTask] = []
+    for index, line in enumerate(source_path.read_text(encoding="utf-8-sig", errors="replace").splitlines(), start=1):
+        match = TASK_LINE_RE.match(line)
+        if not match:
+            continue
+        raw_text = match.group(2).strip()
+        number_match = TASK_NUMBER_RE.match(raw_text)
+        if number_match:
+            task_number = number_match.group(1)
+            text = number_match.group(2).strip()
+        else:
+            task_number = None
+            text = raw_text
+        tasks.append(
+            SourceTask(
+                source_path=source_path.resolve(),
+                task_number=task_number,
+                text=text,
+                checked=match.group(1).lower() == "x",
+                line_number=index,
+            )
+        )
+    return tasks
+
+
+def _task_matches_selector(task: SourceTask, selector: str) -> bool:
+    selector = _normalize_selector(selector)
+    if not selector:
+        return False
+    if task.task_number and selector == task.task_number:
+        return True
+    return normalize_task_identity(selector) in {
+        normalize_task_identity(task.text),
+        normalize_task_identity(task.label),
+    }
+
+
+def select_source_tasks(selection: SourceSelection, include_done: bool = False) -> list[SourceTask]:
+    validate_source_selection(selection)
+    selected: list[SourceTask] = []
+    for source_path in selection.source_paths:
+        source_tasks = parse_source_tasks(source_path)
+        if selection.task_selectors:
+            source_tasks = [
+                task
+                for task in source_tasks
+                if any(_task_matches_selector(task, selector) for selector in selection.task_selectors)
+            ]
+        selected.extend(task for task in source_tasks if include_done or not task.checked)
+    return selected
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -195,6 +272,9 @@ def main(argv: Iterable[str] | None = None) -> int:
             print(f"- task selector: {selector}")
         for task in selection.inline_tasks:
             print(f"- inline task: {task}")
+        if selection.source_paths:
+            selected_tasks = select_source_tasks(selection)
+            print(f"Selected source tasks: {len(selected_tasks)}")
     return 0
 
 
