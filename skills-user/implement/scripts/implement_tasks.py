@@ -42,6 +42,14 @@ class WorktreeWarning:
         )
 
 
+@dataclass(frozen=True)
+class PushPlan:
+    branch: str | None
+    source: str
+    requires_clarification: bool
+    reason: str
+
+
 def resolve_implement_plan(tactic_arguments: Iterable[str] | None = None) -> ImplementPlan:
     arguments = tuple(arg for arg in (tactic_arguments or ()) if arg)
     return ImplementPlan(
@@ -63,6 +71,26 @@ def notify_event_sequence() -> tuple[str, ...]:
 
 def format_notify_plan() -> str:
     return "Notify events: " + ", ".join(IMPLEMENT_NOTIFY_EVENTS)
+
+
+def resolve_push_plan(
+    explicit_branch: str | None = None,
+    current_branch: str | None = None,
+    default_to_master: bool = False,
+) -> PushPlan:
+    if explicit_branch:
+        return PushPlan(explicit_branch, "explicit", False, "using explicitly agreed branch")
+    if current_branch:
+        return PushPlan(current_branch, "current-context", False, "using current context branch")
+    if default_to_master:
+        return PushPlan("master", "master-default", False, "using master because context indicates normal master work")
+    return PushPlan(None, "ambiguous", True, "branch inference is unsafe; ask for clarification before pushing")
+
+
+def format_push_plan(plan: PushPlan) -> str:
+    if plan.requires_clarification:
+        return f"Push blocked: {plan.reason}"
+    return f"Push target: {plan.branch} ({plan.source})"
 
 
 def build_worktree_warning(repo_path: Path, status_output: str) -> WorktreeWarning:
@@ -92,6 +120,13 @@ def build_parser() -> argparse.ArgumentParser:
         default=".",
         help="Repo path to inspect for the non-blocking dirty-worktree warning.",
     )
+    parser.add_argument("--branch", default=None, help="Explicit agreed branch to push.")
+    parser.add_argument("--current-branch", default=None, help="Current context branch for push inference.")
+    parser.add_argument(
+        "--default-master",
+        action="store_true",
+        help="Allow master as the inferred push branch when no explicit/current branch is supplied.",
+    )
     return parser
 
 
@@ -101,6 +136,7 @@ def main(argv: Iterable[str] | None = None) -> int:
     print(inspect_worktree(Path(args.repo_root)).message)
     print(format_tactic_handoff(plan))
     print(format_notify_plan())
+    print(format_push_plan(resolve_push_plan(args.branch, args.current_branch, args.default_master)))
     return 0
 
 

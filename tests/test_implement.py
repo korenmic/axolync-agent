@@ -53,6 +53,24 @@ class ImplementTests(unittest.TestCase):
         self.assertGreater(events.index("tactic-finished"), events.index("tactic-task-done"))
         self.assertGreater(events.index("push-complete"), events.index("tactic-finished"))
 
+    def test_push_plan_prefers_explicit_branch(self):
+        plan = implement_tasks.resolve_push_plan(
+            explicit_branch="feature",
+            current_branch="master",
+            default_to_master=True,
+        )
+
+        self.assertEqual(plan.branch, "feature")
+        self.assertEqual(plan.source, "explicit")
+        self.assertFalse(plan.requires_clarification)
+
+    def test_push_plan_blocks_unsafe_inference(self):
+        plan = implement_tasks.resolve_push_plan()
+
+        self.assertIsNone(plan.branch)
+        self.assertTrue(plan.requires_clarification)
+        self.assertIn("Push blocked", implement_tasks.format_push_plan(plan))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -27,7 +27,7 @@
   - Notify when all tasks finish.
   - Notify again after push completes.
 
-- [ ] 5. Specify post-implementation push behavior
+- [x] 5. Specify post-implementation push behavior
   - Push only after all runnable undone tasks are complete and committed.
   - Resolve branch from explicit agreement first, then current context, then `master` when context indicates normal master work.
   - Ask for clarification when branch inference is unsafe.

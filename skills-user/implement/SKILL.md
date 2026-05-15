@@ -71,3 +71,15 @@ Required events:
 - push complete
 
 The push-complete notification is separate from the TACTIC finish notification because it confirms the branch handoff completed.
+
+## Push Behavior
+
+Push only after all runnable undone tasks are complete and committed.
+
+Branch priority:
+
+1. explicitly agreed branch from the current prompt, conversation, or dispatch context
+2. current context branch when already established as the implementation target
+3. `master` when context indicates normal master work
+
+If branch inference is unsafe, ask before pushing. Do not silently create a new branch. If push fails, report the exact blocker and do not send a push-complete notification.
