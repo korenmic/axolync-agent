@@ -104,6 +104,29 @@ class EnqueueTests(unittest.TestCase):
 
             self.assertEqual([task.label for task in selected], ["2. Runnable task"])
 
+    def test_duplicate_prevention_skips_already_queued_source_task(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "spec" / "tasks.md"
+            source.parent.mkdir(parents=True)
+            source.write_text("- [ ] 1. Runnable task\n- [ ] 2. Other task\n", encoding="utf-8")
+            queue_path = root / ".codex" / "local-task-queue.md"
+            queue_path.parent.mkdir(parents=True)
+            queue_path.write_text(
+                "# Local Task Queue\n\n## Queued Items\n\n"
+                "### Q-001\n"
+                "- Status: `queued`\n"
+                "- Source: [tasks.md](spec/tasks.md)\n"
+                "- Task: `1. Runnable task`\n",
+                encoding="utf-8",
+            )
+            tasks = enqueue_tasks.parse_source_tasks(source)
+
+            check = enqueue_tasks.filter_duplicate_source_tasks(tasks, queue_path, root)
+
+            self.assertEqual([task.label for task in check.duplicate_tasks], ["1. Runnable task"])
+            self.assertEqual([task.label for task in check.new_tasks], ["2. Other task"])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -26,7 +26,7 @@
   - Skip checked or completed tasks unless explicitly requested as audit records.
   - Support specific task selection from partially completed specs.
 
-- [ ] 5. Implement duplicate prevention
+- [x] 5. Implement duplicate prevention
   - Compare requested by-reference tasks against existing queue records using source path plus task number/title.
   - Normalize only obvious Markdown wrappers, checklist markers, backticks, and whitespace.
   - Avoid broad fuzzy matching for merely similar wording.

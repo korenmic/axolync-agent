@@ -53,6 +53,12 @@ class SourceTask:
         return f"{self.task_number}. {self.text}" if self.task_number else self.text
 
 
+@dataclass(frozen=True)
+class DuplicateCheck:
+    new_tasks: tuple[SourceTask, ...]
+    duplicate_tasks: tuple[SourceTask, ...]
+
+
 class EnqueueInputError(ValueError):
     pass
 
@@ -121,6 +127,71 @@ def normalize_task_identity(value: str) -> str:
     value = re.sub(r"^\s*[-*]\s+\[[ xX]\]\s*", "", value)
     value = re.sub(r"\s+", " ", value)
     return value.rstrip(".").lower()
+
+
+def normalize_source_identity(value: str | Path, workspace_root: Path) -> str:
+    raw = str(value).strip().strip("`")
+    link_match = re.search(r"\[[^\]]+\]\(([^)]+)\)", raw)
+    if link_match:
+        raw = link_match.group(1).strip()
+    raw = raw.replace("\\", "/")
+    if re.match(r"^/[A-Za-z]:/", raw):
+        raw = raw[1:]
+    path = Path(raw)
+    if not path.is_absolute():
+        path = workspace_root / path
+    try:
+        return str(path.resolve()).lower()
+    except OSError:
+        return str(path).lower()
+
+
+def source_task_duplicate_key(task: SourceTask, workspace_root: Path) -> tuple[str, str]:
+    task_identity = task.task_number or normalize_task_identity(task.text)
+    return normalize_source_identity(task.source_path, workspace_root), task_identity
+
+
+def _extract_markdown_field(body: str, field_name: str) -> str | None:
+    match = re.search(rf"(?m)^- {re.escape(field_name)}: (.+)$", body)
+    return match.group(1).strip() if match else None
+
+
+def existing_source_task_keys(queue_path: Path, workspace_root: Path) -> set[tuple[str, str]]:
+    if not queue_path.exists():
+        return set()
+    text = queue_path.read_text(encoding="utf-8-sig", errors="replace")
+    pieces = re.split(r"(?m)^### +Q-\d+\s*$", text)
+    keys: set[tuple[str, str]] = set()
+    for body in pieces[1:]:
+        source_raw = _extract_markdown_field(body, "Source")
+        task_raw = _extract_markdown_field(body, "Task")
+        if not source_raw or not task_raw:
+            continue
+        if "tasks.md" not in source_raw.replace("\\", "/"):
+            continue
+        task_text = _normalize_selector(task_raw)
+        number_match = TASK_NUMBER_RE.match(task_text)
+        task_identity = number_match.group(1) if number_match else normalize_task_identity(task_text)
+        keys.add((normalize_source_identity(source_raw, workspace_root), task_identity))
+    return keys
+
+
+def filter_duplicate_source_tasks(
+    tasks: Iterable[SourceTask],
+    queue_path: Path,
+    workspace_root: Path,
+) -> DuplicateCheck:
+    existing_keys = existing_source_task_keys(queue_path, workspace_root)
+    new_tasks: list[SourceTask] = []
+    duplicate_tasks: list[SourceTask] = []
+    for task in tasks:
+        key = source_task_duplicate_key(task, workspace_root)
+        if key in existing_keys:
+            duplicate_tasks.append(task)
+            continue
+        existing_keys.add(key)
+        new_tasks.append(task)
+    return DuplicateCheck(tuple(new_tasks), tuple(duplicate_tasks))
 
 
 def resolve_source_selection(
