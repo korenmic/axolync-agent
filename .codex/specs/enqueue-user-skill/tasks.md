@@ -6,7 +6,7 @@
   - State that the skill mutates only the local queue file and must not implement queued tasks or run TACTIC.
   - Document the final `$queue-status verbose` and manual "added now" reporting requirement.
 
-- [ ] 2. Add queue discovery and auto-creation support
+- [x] 2. Add queue discovery and auto-creation support
   - Resolve the workspace queue path as `<workspace-root>/.codex/local-task-queue.md`.
   - Create the queue file with the standard header and `## Queued Items` section when it is missing.
   - Preserve existing queue records when the queue already exists.
