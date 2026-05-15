@@ -461,15 +461,6 @@ def format_report(report: QueueReport, verbose: bool = False) -> str:
         lines.append(f"- Blocked: {status_counts.get('blocked', 0)}")
         lines.append(f"- Skipped: {status_counts.get('skipped', 0)}")
         lines.append(f"- Unknown status: {status_counts.get('unrecognized_status', 0)}")
-        if verbose:
-            lines.append("")
-            lines.append("Undone records:")
-            undone_records = _undone_records(records)
-            if not undone_records:
-                lines.append("- None")
-            else:
-                for record in undone_records:
-                    lines.append(_format_undone_summary(record))
         lines.append("")
         lines.append("Classification counts:")
         lines.append(f"- By-reference: {class_counts.get('by-reference', 0)}")
@@ -504,6 +495,16 @@ def format_report(report: QueueReport, verbose: bool = False) -> str:
                 lines.append(f"- {gap}")
             if len(report.parse_result.parser_gaps) > 10:
                 lines.append(f"- ... {len(report.parse_result.parser_gaps) - 10} more")
+        lines.append("")
+        lines.append(f"Undone: {status_counts.get('undone_total', 0)}")
+        if verbose:
+            lines.append("Undone records:")
+            undone_records = _undone_records(records)
+            if not undone_records:
+                lines.append("- None")
+            else:
+                for record in undone_records:
+                    lines.append(_format_undone_summary(record))
     if report.warnings:
         lines.append("")
         lines.append("Warnings:")

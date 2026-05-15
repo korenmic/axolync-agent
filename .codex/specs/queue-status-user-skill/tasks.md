@@ -78,7 +78,7 @@
   - Include qid, normalized status, classification, and a compact task label or reference for each undone record.
   - Keep verbose output human-readable only and do not persist a second machine-readable artifact.
 
-- [ ] 12. Move undone elaboration to the bottom of the report
+- [x] 12. Move undone elaboration to the bottom of the report
   - Reorder human output so the `undone:` elaboration always appears at the bottom.
   - Place verbose undone-task expansion adjacent to the bottom `undone:` section when `verbose` is supplied.
   - Keep top-level counts concise so the expanded details are not separated from the count they explain.

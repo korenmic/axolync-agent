@@ -44,6 +44,8 @@ The parser prints a concise human-readable report. It does not persist a second 
 
 Use `verbose` when the user asks to expand the undone queue. Verbose output prints one compact line per enqueued undone record with qid, normalized status, classification, and task label.
 
+The `Undone:` elaboration appears at the bottom of the report. In verbose mode, the expanded undone record list is adjacent to that bottom section.
+
 ## Queue Authority
 
 Queue-local state is authoritative for queue-status counts.

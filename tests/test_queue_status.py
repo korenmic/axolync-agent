@@ -100,6 +100,30 @@ class QueueStatusTests(unittest.TestCase):
         self.assertIn("Q-002: ready; by-reference; Clarify lyric transform layer switcher labels", output)
         self.assertNotIn("Q-001: done; by-reference", output)
 
+    def test_undone_elaboration_is_last_section_in_default_report(self):
+        report = queue_status.build_report(
+            FIXTURE_WORKSPACE,
+            FIXTURES / "sinq2-markdown" / "local-task-queue.md",
+        )
+
+        output = queue_status.format_report(report)
+
+        self.assertIn("\nUndone: 1", output)
+        self.assertTrue(output.rstrip().endswith("Undone: 1"))
+
+    def test_verbose_undone_records_are_adjacent_to_bottom_undone_section(self):
+        report = queue_status.build_report(
+            FIXTURE_WORKSPACE,
+            FIXTURES / "sinq2-markdown" / "local-task-queue.md",
+        )
+
+        output = queue_status.format_report(report, verbose=True)
+        undone_index = output.rindex("Undone: 1")
+        records_index = output.rindex("Undone records:")
+
+        self.assertLess(undone_index, records_index)
+        self.assertNotIn("Classification counts:", output[undone_index:])
+
 
 if __name__ == "__main__":
     unittest.main()
