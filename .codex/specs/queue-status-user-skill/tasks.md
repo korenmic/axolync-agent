@@ -12,7 +12,7 @@
   - Discover queues in order: explicit path, `.codex/local-task-queue.md`, `.codex/tmp/execution-queue.json`.
   - Return a graceful no-queue-found human report when no queue exists.
 
-- [ ] 3. Implement Markdown queue parsing
+- [x] 3. Implement Markdown queue parsing
   - Parse only the active `## Queued Items` section for active counts.
   - Extract qid, status, source, task label, and optional detail text from `### Q-###` records.
   - Classify `tasks.md` sources as by-reference.
