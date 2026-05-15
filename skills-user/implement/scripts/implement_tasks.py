@@ -93,6 +93,20 @@ def format_push_plan(plan: PushPlan) -> str:
     return f"Push target: {plan.branch} ({plan.source})"
 
 
+def format_no_undone_tasks_message(undone_count: int) -> str:
+    if undone_count == 0:
+        return "No undone enqueued tasks found; nothing to implement and no push will be attempted."
+    return f"Undone enqueued tasks: {undone_count}"
+
+
+def can_push_after_tactic(all_runnable_complete: bool, committed_work: bool, blockers: Iterable[str] = ()) -> bool:
+    return all_runnable_complete and committed_work and not tuple(blockers)
+
+
+def format_push_failure(command: str, error_text: str) -> str:
+    return f"Push failed while running {command!r}: {error_text.strip()}"
+
+
 def build_worktree_warning(repo_path: Path, status_output: str) -> WorktreeWarning:
     status_lines = tuple(line for line in status_output.splitlines() if line.strip())
     return WorktreeWarning(repo_path=repo_path, dirty=bool(status_lines), status_lines=status_lines)

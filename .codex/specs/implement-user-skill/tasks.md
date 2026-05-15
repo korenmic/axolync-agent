@@ -34,7 +34,7 @@
   - Do not silently create a branch.
   - Report exact push blockers without claiming completion.
 
-- [ ] 6. Add wrapper regression tests or fixtures
+- [x] 6. Add wrapper regression tests or fixtures
   - Cover forwarding extra arguments to `$tactic`.
   - Cover no-undone-task no-op behavior.
   - Cover dirty worktree warning without wrapper-level blocking.

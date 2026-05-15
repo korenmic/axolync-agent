@@ -71,6 +71,24 @@ class ImplementTests(unittest.TestCase):
         self.assertTrue(plan.requires_clarification)
         self.assertIn("Push blocked", implement_tasks.format_push_plan(plan))
 
+    def test_no_undone_task_message_blocks_push_attempt(self):
+        message = implement_tasks.format_no_undone_tasks_message(0)
+
+        self.assertIn("nothing to implement", message)
+        self.assertIn("no push", message)
+
+    def test_can_push_requires_completion_commit_and_no_blockers(self):
+        self.assertTrue(implement_tasks.can_push_after_tactic(True, True, []))
+        self.assertFalse(implement_tasks.can_push_after_tactic(False, True, []))
+        self.assertFalse(implement_tasks.can_push_after_tactic(True, False, []))
+        self.assertFalse(implement_tasks.can_push_after_tactic(True, True, ["blocked task"]))
+
+    def test_push_failure_report_keeps_exact_blocker_visible(self):
+        message = implement_tasks.format_push_failure("git push origin master", "non-fast-forward")
+
+        self.assertIn("git push origin master", message)
+        self.assertIn("non-fast-forward", message)
+
 
 if __name__ == "__main__":
     unittest.main()
