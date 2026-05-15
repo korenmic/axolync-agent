@@ -28,6 +28,8 @@ class QueueRecord:
     task_label: str
     source_raw: str
     source_path: Path | None = None
+    source_exists: bool | None = None
+    source_status_bucket: str | None = None
     record_index: int = 0
     raw_excerpt: str = ""
     warnings: list[str] = field(default_factory=list)
@@ -135,6 +137,14 @@ def _normalize_possible_path(raw: str, workspace_root: Path) -> Path:
     return path
 
 
+def _normalize_task_text(value: str) -> str:
+    value = value.strip().strip("`").strip()
+    value = re.sub(r"^\s*[-*]\s+\[[ xX]\]\s*", "", value)
+    value = re.sub(r"^\s*\d+\.\s*", "", value)
+    value = re.sub(r"\s+", " ", value)
+    return value.rstrip(".").lower()
+
+
 def _classify_source(source_raw: str, workspace_root: Path) -> tuple[str, Path | None, str | None]:
     normalized_source = _strip_markdown_ticks(source_raw)
     link_target = _extract_markdown_link_target(source_raw)
@@ -221,6 +231,26 @@ def parse_markdown_queue(path: Path, workspace_root: Path) -> QueueParseResult:
     return QueueParseResult(records=records, parser_gaps=gaps, warnings=warnings)
 
 
+def _find_referenced_task_status(source_path: Path, task_label: str) -> str | None:
+    if not source_path.exists():
+        return None
+    wanted = _normalize_task_text(task_label)
+    if not wanted:
+        return None
+    try:
+        lines = source_path.read_text(encoding="utf-8-sig", errors="replace").splitlines()
+    except OSError:
+        return None
+    for line in lines:
+        match = re.match(r"^\s*[-*]\s+\[([ xX])\]\s+(.+)$", line)
+        if not match:
+            continue
+        line_text = _normalize_task_text(match.group(2))
+        if line_text == wanted or wanted in line_text or line_text in wanted:
+            return "done" if match.group(1).lower() == "x" else "ready"
+    return None
+
+
 def parse_json_queue(path: Path, workspace_root: Path) -> QueueParseResult:
     try:
         payload = json.loads(path.read_text(encoding="utf-8-sig"))
@@ -293,9 +323,25 @@ def parse_queue(artifact: QueueArtifact, workspace_root: Path) -> QueueParseResu
     return QueueParseResult(parser_gaps=[f"unsupported queue format: {artifact.path.suffix or artifact.path.name}"])
 
 
+def add_reference_diagnostics(parse_result: QueueParseResult) -> QueueParseResult:
+    for record in parse_result.records:
+        if record.classification != "by-reference" or record.source_path is None:
+            continue
+        record.source_exists = record.source_path.exists()
+        if not record.source_exists:
+            record.warnings.append(f"missing referenced source: {record.source_path}")
+            continue
+        record.source_status_bucket = _find_referenced_task_status(record.source_path, record.task_label)
+        if record.source_status_bucket and record.source_status_bucket != record.status_bucket:
+            record.warnings.append(
+                f"queue/source status drift: queue={record.status_bucket} source={record.source_status_bucket}"
+            )
+    return parse_result
+
+
 def attach_parse_result(report: QueueReport) -> QueueReport:
     if report.active_queue is not None:
-        report.parse_result = parse_queue(report.active_queue, report.workspace_root)
+        report.parse_result = add_reference_diagnostics(parse_queue(report.active_queue, report.workspace_root))
     return report
 
 
@@ -331,6 +377,22 @@ def _unknown_status_gaps(records: list[QueueRecord]) -> list[str]:
     ]
 
 
+def _reference_diagnostics(records: list[QueueRecord]) -> tuple[list[QueueRecord], list[QueueRecord]]:
+    missing = [
+        record
+        for record in records
+        if record.classification == "by-reference" and record.source_exists is False
+    ]
+    drift = [
+        record
+        for record in records
+        if record.classification == "by-reference"
+        and record.source_status_bucket is not None
+        and record.source_status_bucket != record.status_bucket
+    ]
+    return missing, drift
+
+
 def format_report(report: QueueReport) -> str:
     lines = ["# Queue Status", ""]
     lines.append(f"Workspace: {report.workspace_root}")
@@ -361,6 +423,17 @@ def format_report(report: QueueReport) -> str:
         lines.append(f"- By-reference: {class_counts.get('by-reference', 0)}")
         lines.append(f"- By-value: {class_counts.get('by-value', 0)}")
         lines.append(f"- Unrecognized: {class_counts.get('unrecognized', 0)}")
+        missing_refs, drift_refs = _reference_diagnostics(records)
+        lines.append("")
+        lines.append("Reference diagnostics:")
+        lines.append(f"- Missing references: {len(missing_refs)}")
+        lines.append(f"- Queue/source drift: {len(drift_refs)}")
+        if missing_refs:
+            sample = ", ".join(record.qid for record in missing_refs[:8])
+            lines.append(f"- Missing reference sample: {sample}")
+        if drift_refs:
+            sample = ", ".join(record.qid for record in drift_refs[:8])
+            lines.append(f"- Drift sample: {sample}")
         for gap in _unknown_status_gaps(records):
             if gap not in report.parse_result.parser_gaps:
                 report.parse_result.parser_gaps.append(gap)

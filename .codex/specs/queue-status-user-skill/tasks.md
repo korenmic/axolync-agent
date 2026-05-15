@@ -35,7 +35,7 @@
   - Preserve unknown statuses as unrecognized status gaps.
   - Report total, done, undone, ready, active, blocked, skipped, by-reference, by-value, and unrecognized counts.
 
-- [ ] 6. Implement reference diagnostics without changing count authority
+- [x] 6. Implement reference diagnostics without changing count authority
   - Canonicalize Markdown-linked Windows paths including `C:/...`, `/C:/...`, and `/c:/...`.
   - Check whether referenced source files exist.
   - Report missing referenced sources without failing the run.
