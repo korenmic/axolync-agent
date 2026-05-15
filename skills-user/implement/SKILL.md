@@ -83,3 +83,25 @@ Branch priority:
 3. `master` when context indicates normal master work
 
 If branch inference is unsafe, ask before pushing. Do not silently create a new branch. If push fails, report the exact blocker and do not send a push-complete notification.
+
+## Verification
+
+When changing this skill, run:
+
+```powershell
+python -m unittest tests.test_implement -v
+```
+
+For a broader queue-workflow check, run:
+
+```powershell
+python -m unittest tests.test_queue_status tests.test_enqueue tests.test_implement -v
+```
+
+## Authority Boundaries
+
+- `$tactic` owns task execution and commit discipline.
+- `$notify` owns notification transport and formatting defaults.
+- `$enqueue` owns adding new queue records.
+- `$queue-status` owns read-only queue health reporting.
+- `$implement` owns only the wrapper handoff, final push decision, and push-complete notification.

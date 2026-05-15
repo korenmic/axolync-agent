@@ -42,7 +42,7 @@
   - Cover push failure reporting.
   - Cover wrapper notify boundary events.
 
-- [ ] 7. Self-review and document usage limits
+- [x] 7. Self-review and document usage limits
   - Verify the skill docs preserve TACTIC authority.
   - Verify the skill docs preserve notify authority.
   - Verify the docs describe the final push and push-complete notification.
