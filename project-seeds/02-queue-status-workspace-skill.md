@@ -86,6 +86,12 @@ Axolync agents often use queued task execution across multiple Sinq workspaces. 
    - Reserve explicit buckets for `in_progress`, `blocked`, and `skipped` even if they are not present in the current sample.
    - Preserve unknown status labels in the JSON output and the AI gap report.
 
+10. Add deterministic fixture coverage from observed real queues.
+   - Create copied or sanitized test fixtures derived from the observed Sinq, Sinq2, Sinq3, and Sinq4 queue files.
+   - Do not make automated tests depend on live `C:/Users/.../Sinq*` paths existing.
+   - Fixture coverage must prove parsing for Markdown local-task queues, JSON execution queues, status normalization, by-reference records, by-value records, missing referenced sources, and section-aware duplicate/history handling.
+   - Keep live cross-workspace inspection as a manual diagnostic mode, separate from CI fixtures.
+
 ## Inspection Findings
 
 The first inspection pass looked at workspace-local queues in:
