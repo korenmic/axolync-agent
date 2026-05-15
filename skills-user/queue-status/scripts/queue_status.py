@@ -405,7 +405,29 @@ def _record_warning_gaps(records: list[QueueRecord]) -> list[str]:
     return gaps
 
 
-def format_report(report: QueueReport) -> str:
+def _undone_records(records: list[QueueRecord]) -> list[QueueRecord]:
+    return [
+        record
+        for record in records
+        if record.status_bucket in {"ready", "active", "blocked", "unrecognized_status"}
+    ]
+
+
+def _compact_task_label(value: str, max_length: int = 96) -> str:
+    value = re.sub(r"\s+", " ", value).strip()
+    if len(value) <= max_length:
+        return value
+    return f"{value[:max_length - 1].rstrip()}..."
+
+
+def _format_undone_summary(record: QueueRecord) -> str:
+    return (
+        f"- {record.qid}: {record.status_bucket}; {record.classification}; "
+        f"{_compact_task_label(record.task_label)}"
+    )
+
+
+def format_report(report: QueueReport, verbose: bool = False) -> str:
     lines = ["# Queue Status", ""]
     lines.append("Queue source:")
     lines.append(f"Workspace: {report.workspace_root}")
@@ -439,6 +461,15 @@ def format_report(report: QueueReport) -> str:
         lines.append(f"- Blocked: {status_counts.get('blocked', 0)}")
         lines.append(f"- Skipped: {status_counts.get('skipped', 0)}")
         lines.append(f"- Unknown status: {status_counts.get('unrecognized_status', 0)}")
+        if verbose:
+            lines.append("")
+            lines.append("Undone records:")
+            undone_records = _undone_records(records)
+            if not undone_records:
+                lines.append("- None")
+            else:
+                for record in undone_records:
+                    lines.append(_format_undone_summary(record))
         lines.append("")
         lines.append("Classification counts:")
         lines.append(f"- By-reference: {class_counts.get('by-reference', 0)}")
@@ -507,6 +538,17 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Read-only diagnostic mode for sibling Sinq/Sinq2/Sinq3/Sinq4 workspaces.",
     )
+    parser.add_argument(
+        "verbosity",
+        nargs="?",
+        choices=["verbose"],
+        help="Print compact summaries for each enqueued undone record.",
+    )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Print compact summaries for each enqueued undone record.",
+    )
     return parser
 
 
@@ -518,10 +560,10 @@ def main(argv: Iterable[str] | None = None) -> int:
         reports = [build_report(root) for root in known_sinq_roots(workspace_root)]
         if not reports:
             reports = [QueueReport(workspace_root=workspace_root, active_queue=None, warnings=["no known sibling Sinq roots found"])]
-        print("\n\n---\n\n".join(format_report(report) for report in reports))
+        print("\n\n---\n\n".join(format_report(report, verbose=args.verbose or args.verbosity == "verbose") for report in reports))
         return 0
     report = build_report(workspace_root, explicit_path)
-    print(format_report(report))
+    print(format_report(report, verbose=args.verbose or args.verbosity == "verbose"))
     return 0
 
 

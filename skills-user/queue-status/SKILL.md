@@ -34,11 +34,15 @@ Use the script relative to this skill:
 
 ```powershell
 python scripts/queue_status.py --workspace-root <workspace-root>
+python scripts/queue_status.py --workspace-root <workspace-root> verbose
+python scripts/queue_status.py --workspace-root <workspace-root> --verbose
 python scripts/queue_status.py --queue-path <path-to-queue>
 python scripts/queue_status.py --workspace-root <workspace-root> --diagnose-known-sinq-roots
 ```
 
 The parser prints a concise human-readable report. It does not persist a second machine-readable status artifact by default because the queue file is already the source data.
+
+Use `verbose` when the user asks to expand the undone queue. Verbose output prints one compact line per enqueued undone record with qid, normalized status, classification, and task label.
 
 ## Queue Authority
 

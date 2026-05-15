@@ -88,6 +88,18 @@ class QueueStatusTests(unittest.TestCase):
             ["duplicate qids in non-active sections ignored for counts: Q-279"],
         )
 
+    def test_verbose_report_lists_undone_records(self):
+        report = queue_status.build_report(
+            FIXTURE_WORKSPACE,
+            FIXTURES / "sinq2-markdown" / "local-task-queue.md",
+        )
+
+        output = queue_status.format_report(report, verbose=True)
+
+        self.assertIn("Undone records:", output)
+        self.assertIn("Q-002: ready; by-reference; Clarify lyric transform layer switcher labels", output)
+        self.assertNotIn("Q-001: done; by-reference", output)
+
 
 if __name__ == "__main__":
     unittest.main()
