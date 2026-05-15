@@ -29,7 +29,19 @@ class ImplementTests(unittest.TestCase):
         self.assertEqual(plan.tactic_arguments, ("autonomous", "--only", "Q-100"))
         self.assertIn("autonomous --only Q-100", implement_tasks.format_tactic_handoff(plan))
 
+    def test_dirty_worktree_warning_is_non_blocking(self):
+        warning = implement_tasks.build_worktree_warning(Path("repo"), " M file.txt\n?? new.txt\n")
+
+        self.assertTrue(warning.dirty)
+        self.assertIn("Warning: worktree is not clean", warning.message)
+        self.assertIn("leaves dirty-state handling to $tactic", warning.message)
+
+    def test_clean_worktree_warning_reports_clean(self):
+        warning = implement_tasks.build_worktree_warning(Path("repo"), "")
+
+        self.assertFalse(warning.dirty)
+        self.assertIn("Worktree clean", warning.message)
+
 
 if __name__ == "__main__":
     unittest.main()
-

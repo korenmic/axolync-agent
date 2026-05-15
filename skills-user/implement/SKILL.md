@@ -45,3 +45,13 @@ $implement
 $implement autonomous
 $implement autonomous --only Q-100
 ```
+
+## Dirty Worktree Warning
+
+Before invoking `$tactic`, inspect relevant worktrees when practical. If a worktree is dirty, warn clearly:
+
+```text
+Warning: worktree is not clean: <repo>. Proceeding leaves dirty-state handling to $tactic.
+```
+
+Do not block solely because of dirty state. `$tactic` owns dirty-state handling, integrity recovery, and catastrophic stop decisions.

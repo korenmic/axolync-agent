@@ -14,7 +14,7 @@
   - Let `$tactic` perform its normal mode inference when no mode is supplied.
   - Add guard wording that `$implement` must not scan unrelated specs/backlogs for extra work.
 
-- [ ] 3. Add worktree warning behavior
+- [x] 3. Add worktree warning behavior
   - Inspect relevant worktree state before invoking `$tactic`.
   - Warn when a relevant worktree is dirty.
   - Do not block solely because of dirty state.
