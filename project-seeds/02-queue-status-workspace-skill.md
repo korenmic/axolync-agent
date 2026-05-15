@@ -42,8 +42,8 @@ Axolync agents often use queued task execution across multiple Sinq workspaces. 
    - Prefer the Markdown queue when both Markdown and JSON queues exist, but report the lower-priority queue as an additional discovered queue artifact.
    - Treat a missing queue file as "no initiated queue" rather than as an error.
    - Parse JSON queues with top-level metadata and an `items` array.
-   - Emit a stable machine-readable JSON summary.
-   - Emit a concise human-readable table or bullet summary for interactive use.
+   - Compute stable internal parser data as needed.
+   - Emit a concise human-readable table or bullet summary for interactive use, without writing a second machine-readable status artifact by default.
 
 3. Allow AI/context-assisted queue path fallback.
    - Script discovery should cover known conventions, hard-coded candidates, and lightweight local search where appropriate.
@@ -135,11 +135,16 @@ Observed Sinq3 JSON queue shape:
 - Optional item fields observed: `notes`, `note`, `completedAt`, and `completed_at`.
 - The inspected JSON queue had 120 items, all `done`, all by-reference, and 8 missing referenced task-source files. Missing sources should be visible in output but should not prevent status counting.
 
+## Resolved Decisions
+
+- Queue discovery should search `<workspace-root>/.codex/local-task-queue.md` first, then `<workspace-root>/.codex/tmp/execution-queue.json`, then allow explicit user/context-provided paths as fallback.
+- Status normalization should treat `done` and `completed` as done, `queued` as ready, `in_progress` as active-undone, `blocked` as blocked-undone, `skipped` as skipped-not-done, and unknown labels as `unrecognized_status`.
+- Blocked tasks should count in both `undone_total` and a separate `blocked` bucket.
+- Queue-local status is authoritative for queue-status counts. Referenced `tasks.md` files may be inspected as optional evidence and drift diagnostics, but they must not cause un-enqueued tasks to affect queue-status output.
+- A queue item id (`qid`) is the queue-local record identity, such as `Q-001` or `Q0001`. It identifies the queued record, not the referenced source task.
+- `$queue-status` should output concise human-readable text only by default. It does not need to store or emit a second machine-data representation because the queue file itself is the machine-readable source.
+- Summary/history sections should be ignored for active counts, but scanned enough to warn about duplicate ids or suspicious overlap.
+
 ## Open Questions
 
-- What is the exact active queue file/directory convention across current Sinq workspaces?
-- What status markers should count as done, skipped, blocked, or ready?
-- Should blocked tasks count as undone, or should they be reported in a separate blocked bucket?
-- Should by-reference completion be authoritative from the queue record, the referenced `tasks.md`, or both with mismatch reporting?
-- Should `$queue-status` output JSON by default, human text by default, or both?
-- Should summary/history sections be parsed into a separate history bucket, or ignored except for duplicate/corruption warnings?
+- Should the eventual implementation include an optional debug flag for raw parser diagnostics, or should all parser gaps be summarized only in the human output?
