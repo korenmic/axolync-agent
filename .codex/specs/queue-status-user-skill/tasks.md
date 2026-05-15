@@ -65,7 +65,7 @@
   - Test missing reference reporting.
   - Test that referenced but un-enqueued source tasks do not affect queue totals.
 
-- [ ] 10. Self-review and document usage limits
+- [x] 10. Self-review and document usage limits
   - Run the queue-status tests.
   - Run a manual local check against the current workspace queue if available.
   - Verify the skill docs clearly state read-only behavior, queue-local count authority, and context fallback.

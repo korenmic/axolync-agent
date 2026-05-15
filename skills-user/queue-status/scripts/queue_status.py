@@ -397,6 +397,10 @@ def _record_warning_gaps(records: list[QueueRecord]) -> list[str]:
     gaps = []
     for record in records:
         for warning in record.warnings:
+            if warning.startswith("missing referenced source:"):
+                continue
+            if warning.startswith("queue/source status drift:"):
+                continue
             gaps.append(f"{record.qid}: {warning}; excerpt={record.raw_excerpt!r}")
     return gaps
 
@@ -477,6 +481,15 @@ def format_report(report: QueueReport) -> str:
     return "\n".join(lines)
 
 
+def build_report(workspace_root: Path, explicit_path: Path | None = None) -> QueueReport:
+    return attach_parse_result(discover_queue(workspace_root, explicit_path))
+
+
+def known_sinq_roots(workspace_root: Path) -> list[Path]:
+    parent = workspace_root.resolve().parent
+    return [parent / name for name in ("Sinq", "Sinq2", "Sinq3", "Sinq4") if (parent / name).exists()]
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Report workspace queue status without mutating queue state.")
     parser.add_argument(
@@ -489,6 +502,11 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Explicit queue path from user/context fallback.",
     )
+    parser.add_argument(
+        "--diagnose-known-sinq-roots",
+        action="store_true",
+        help="Read-only diagnostic mode for sibling Sinq/Sinq2/Sinq3/Sinq4 workspaces.",
+    )
     return parser
 
 
@@ -496,8 +514,13 @@ def main(argv: Iterable[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     workspace_root = _resolve_path(args.workspace_root)
     explicit_path = Path(args.queue_path) if args.queue_path else None
-    report = discover_queue(workspace_root, explicit_path)
-    report = attach_parse_result(report)
+    if args.diagnose_known_sinq_roots:
+        reports = [build_report(root) for root in known_sinq_roots(workspace_root)]
+        if not reports:
+            reports = [QueueReport(workspace_root=workspace_root, active_queue=None, warnings=["no known sibling Sinq roots found"])]
+        print("\n\n---\n\n".join(format_report(report) for report in reports))
+        return 0
+    report = build_report(workspace_root, explicit_path)
     print(format_report(report))
     return 0
 

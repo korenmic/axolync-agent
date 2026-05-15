@@ -35,6 +35,7 @@ Use the script relative to this skill:
 ```powershell
 python scripts/queue_status.py --workspace-root <workspace-root>
 python scripts/queue_status.py --queue-path <path-to-queue>
+python scripts/queue_status.py --workspace-root <workspace-root> --diagnose-known-sinq-roots
 ```
 
 The parser prints a concise human-readable report. It does not persist a second machine-readable status artifact by default because the queue file is already the source data.
@@ -48,6 +49,14 @@ For by-reference records, referenced `tasks.md` files are optional drift evidenc
 - un-enqueued source tasks must not affect queue-status counts
 - missing references should be reported, not treated as fatal
 - source/queue completion mismatch should be reported as drift without changing counts
+
+Do not use unchecked tasks from referenced `tasks.md` files as queue tasks unless they have a queue item id in the queue itself.
+
+## Manual Diagnostics
+
+`--diagnose-known-sinq-roots` is a local inspection aid for known sibling Sinq workspaces. Use it only when explicitly asked to inspect multiple local queues.
+
+This mode is still read-only. It does not normalize or repair foreign queues.
 
 ## Report Expectations
 
