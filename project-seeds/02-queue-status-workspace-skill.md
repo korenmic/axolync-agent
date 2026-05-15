@@ -34,6 +34,8 @@ Axolync agents often use queued task execution across multiple Sinq workspaces. 
 2. Add a shared script that discovers and parses the current workspace queue.
    - Locate the active queue file or queue directory using the existing queue/tactic conventions.
    - Treat `<workspace-root>/.codex/local-task-queue.md` as the current established queue file convention when present.
+   - Also detect legacy/alternate JSON queues such as `<workspace-root>/.codex/tmp/execution-queue.json`.
+   - Prefer the Markdown queue when both Markdown and JSON queues exist, but report the lower-priority queue as an additional discovered queue artifact.
    - Treat a missing queue file as "no initiated queue" rather than as an error.
    - Emit a stable machine-readable JSON summary.
    - Emit a concise human-readable table or bullet summary for interactive use.
@@ -93,7 +95,7 @@ The first inspection pass looked at workspace-local queues in:
 Observed queue state:
 
 - `Sinq`, `Sinq2`, and `Sinq4` use `.codex/local-task-queue.md`.
-- `Sinq3` currently has no `.codex/local-task-queue.md`; the skill should report that cleanly.
+- `Sinq3` had no `.codex/local-task-queue.md`, but has used `.codex/tmp/execution-queue.json`; the skill should detect and parse that alternate queue path.
 - `Sinq` had hundreds of completed records, mostly by-reference, plus one by-value review task using source `` `by-value review task` ``.
 - `Sinq2` had a mix of `done` and `queued` records, all by-reference, with references into `.kiro/specs/.../tasks.md` and `backlog/tasks.md`.
 - `Sinq4` had completed records, by-reference records, and inline procedural records using `Source: inline procedural queue task`.
