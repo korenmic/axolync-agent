@@ -1,6 +1,6 @@
 # Tasks
 
-- [ ] 1. Create the `implement` user skill skeleton
+- [x] 1. Create the `implement` user skill skeleton
   - Add `axolync-agent/skills-user/implement/SKILL.md`.
   - Keep the implementation in `skills-user`; do not create a workspace-skill variant.
   - Document `$implement` as the canonical invocation.
