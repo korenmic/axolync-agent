@@ -8,6 +8,15 @@ from typing import Iterable
 
 
 DEFAULT_QUEUE_TARGET = "current workspace undone enqueued tasks"
+IMPLEMENT_NOTIFY_EVENTS = (
+    "implementation-start",
+    "tactic-task-start",
+    "tactic-task-progress",
+    "tactic-task-done",
+    "tactic-blocked",
+    "tactic-finished",
+    "push-complete",
+)
 
 
 @dataclass(frozen=True)
@@ -48,6 +57,14 @@ def format_tactic_handoff(plan: ImplementPlan) -> str:
     return f"Run $tactic with forwarded arguments: {' '.join(plan.tactic_arguments)}"
 
 
+def notify_event_sequence() -> tuple[str, ...]:
+    return IMPLEMENT_NOTIFY_EVENTS
+
+
+def format_notify_plan() -> str:
+    return "Notify events: " + ", ".join(IMPLEMENT_NOTIFY_EVENTS)
+
+
 def build_worktree_warning(repo_path: Path, status_output: str) -> WorktreeWarning:
     status_lines = tuple(line for line in status_output.splitlines() if line.strip())
     return WorktreeWarning(repo_path=repo_path, dirty=bool(status_lines), status_lines=status_lines)
@@ -83,6 +100,7 @@ def main(argv: Iterable[str] | None = None) -> int:
     plan = resolve_implement_plan(args.tactic_arguments)
     print(inspect_worktree(Path(args.repo_root)).message)
     print(format_tactic_handoff(plan))
+    print(format_notify_plan())
     return 0
 
 

@@ -20,7 +20,7 @@
   - Do not block solely because of dirty state.
   - Defer dirty-state handling, recovery, and catastrophic stop decisions to `$tactic`.
 
-- [ ] 4. Specify notify integration
+- [x] 4. Specify notify integration
   - Notify when implementation starts.
   - Preserve TACTIC task start/progress/done notifications.
   - Notify on blocker stop.

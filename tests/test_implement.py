@@ -42,6 +42,17 @@ class ImplementTests(unittest.TestCase):
         self.assertFalse(warning.dirty)
         self.assertIn("Worktree clean", warning.message)
 
+    def test_notify_sequence_includes_tactic_and_push_boundaries(self):
+        events = implement_tasks.notify_event_sequence()
+
+        self.assertIn("implementation-start", events)
+        self.assertIn("tactic-task-start", events)
+        self.assertIn("tactic-task-progress", events)
+        self.assertIn("tactic-task-done", events)
+        self.assertIn("push-complete", events)
+        self.assertGreater(events.index("tactic-finished"), events.index("tactic-task-done"))
+        self.assertGreater(events.index("push-complete"), events.index("tactic-finished"))
+
 
 if __name__ == "__main__":
     unittest.main()

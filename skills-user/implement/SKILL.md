@@ -55,3 +55,19 @@ Warning: worktree is not clean: <repo>. Proceeding leaves dirty-state handling t
 ```
 
 Do not block solely because of dirty state. `$tactic` owns dirty-state handling, integrity recovery, and catastrophic stop decisions.
+
+## Notify Integration
+
+Use `$notify` for wrapper-level events and preserve TACTIC's own per-task notifications.
+
+Required events:
+
+- implementation start
+- TACTIC task start
+- TACTIC task progress
+- TACTIC task done
+- blocker stop
+- all tasks finished
+- push complete
+
+The push-complete notification is separate from the TACTIC finish notification because it confirms the branch handoff completed.
