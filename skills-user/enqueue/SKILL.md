@@ -71,8 +71,12 @@ By-reference task:
 ### Q-123
 - Status: `queued`
 - Source: [tasks.md](/c:/path/to/tasks.md)
+- TaskId: `htid1:repo::path/to/tasks.md::1`
+- TaskIdPacked: `atid1:...`
 - Task: `1. Implement the task`
 ```
+
+`TaskId` / `TaskIdPacked` are additive metadata for the `$task-id` workflow. Do not replace or omit the existing `Source` and `Task` fields, because current queue readers and duplicate checks still depend on them.
 
 By-value task:
 

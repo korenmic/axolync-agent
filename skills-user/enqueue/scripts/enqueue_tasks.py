@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import re
 import subprocess
 import sys
+import zlib
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
@@ -46,6 +48,7 @@ class SourceSelection:
 class SourceTask:
     source_path: Path
     task_number: str | None
+    counted_index: int
     text: str
     checked: bool
     line_number: int
@@ -211,11 +214,67 @@ def _markdown_link_path(path: Path) -> str:
     return normalized
 
 
-def _format_source_record(qid_number: int, task: SourceTask) -> str:
+def _to_posix_path(path: str | Path) -> str:
+    return str(path).replace("\\", "/")
+
+
+def _find_git_root(path: Path) -> Path | None:
+    current = path.resolve()
+    if current.is_file():
+        current = current.parent
+    while True:
+        if (current / ".git").exists():
+            return current
+        parent = current.parent
+        if parent == current:
+            return None
+        current = parent
+
+
+def _relative_or_absolute(path: Path, base: Path) -> str:
+    try:
+        return _to_posix_path(path.resolve().relative_to(base.resolve()))
+    except ValueError:
+        return _to_posix_path(path.resolve())
+
+
+def human_task_id_for_source_task(task: SourceTask, workspace_root: Path) -> str | None:
+    """Return the same human task id shape produced by the task-id skill."""
+    repo_root = _find_git_root(task.source_path)
+    if repo_root is None:
+        return None
+    try:
+        repo = _to_posix_path(repo_root.resolve().relative_to(workspace_root.resolve()))
+    except ValueError:
+        repo = repo_root.name
+    if not repo or repo == ".":
+        repo = repo_root.name
+    rel_source = _relative_or_absolute(task.source_path, repo_root)
+    task_index = task.task_number if task.task_number and task.task_number.isdigit() else str(task.counted_index)
+    return f"htid1:{repo}::{rel_source}::{task_index}"
+
+
+def packed_task_id_for_human_id(human_id: str) -> str:
+    compressor = zlib.compressobj(wbits=-15)
+    compressed = compressor.compress(human_id.encode("utf-8")) + compressor.flush()
+    encoded = base64.urlsafe_b64encode(compressed).decode("ascii").rstrip("=")
+    return f"atid1:{encoded}"
+
+
+def task_id_lines_for_source_task(task: SourceTask, workspace_root: Path) -> str:
+    human_id = human_task_id_for_source_task(task, workspace_root)
+    if human_id is None:
+        return ""
+    packed_id = packed_task_id_for_human_id(human_id)
+    return f"- TaskId: `{human_id}`\n- TaskIdPacked: `{packed_id}`\n"
+
+
+def _format_source_record(qid_number: int, task: SourceTask, workspace_root: Path) -> str:
     return (
         f"### Q-{qid_number:03d}\n"
         "- Status: `queued`\n"
         f"- Source: [tasks.md]({_markdown_link_path(task.source_path)})\n"
+        f"{task_id_lines_for_source_task(task, workspace_root)}"
         f"- Task: `{task.label}`\n"
     )
 
@@ -251,7 +310,7 @@ def enqueue_selection(state: QueueState, selection: SourceSelection) -> EnqueueR
     added_qids: list[str] = []
 
     for task in duplicate_check.new_tasks:
-        record_blocks.append(_format_source_record(qid_number, task))
+        record_blocks.append(_format_source_record(qid_number, task, state.workspace_root))
         added_qids.append(f"Q-{qid_number:03d}")
         qid_number += 1
 
@@ -348,6 +407,7 @@ def parse_source_tasks(source_path: Path) -> list[SourceTask]:
             SourceTask(
                 source_path=source_path.resolve(),
                 task_number=task_number,
+                counted_index=len(tasks) + 1,
                 text=text,
                 checked=match.group(1).lower() == "x",
                 line_number=index,

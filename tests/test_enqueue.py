@@ -132,6 +132,7 @@ class EnqueueTests(unittest.TestCase):
     def test_enqueue_selection_appends_source_and_inline_records(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
+            (root / ".git").mkdir()
             state = enqueue_tasks.discover_queue_state(root)
             source = root / "spec" / "tasks.md"
             source.parent.mkdir(parents=True)
@@ -147,6 +148,8 @@ class EnqueueTests(unittest.TestCase):
 
             self.assertEqual(result.added_qids, ("Q-001", "Q-002"))
             self.assertIn("- Source: [tasks.md](/", queue_text)
+            self.assertIn(f"- TaskId: `htid1:{root.name}::spec/tasks.md::1`", queue_text)
+            self.assertIn("- TaskIdPacked: `atid1:", queue_text)
             self.assertIn("- Task: `1. Runnable task`", queue_text)
             self.assertIn("- Source: `inline procedural queue task`", queue_text)
             self.assertIn("- Task: `context-only task`", queue_text)
