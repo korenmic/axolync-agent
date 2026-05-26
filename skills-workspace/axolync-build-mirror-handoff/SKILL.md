@@ -83,6 +83,23 @@ Use the requested mode:
 
 If no mode is specified, ask only if ambiguity affects runtime or cost materially. Otherwise prefer the normal artifact/report flow requested by the dispatch.
 
+## Long Command Execution
+
+For dispatched build, report, mirror, and CI commands, use the boring direct command path.
+
+Required:
+- Run long builder commands directly through RTK, for example `rtk npm run build:all -- --skip-tests`.
+- Prefer builder-native logs and generated output files for diagnosis.
+- If a direct command exits with unclear output, inspect existing builder output/log files after the command exits.
+- If extra logging is unavoidable, use a bounded helper that exits with the child process and has been proven not to hold the dispatch open.
+
+Forbidden for long dispatched commands:
+- Do not pipe build/report/CI commands through `Tee-Object`, `tee`, transcript wrappers, or equivalent live logging pipelines.
+- Do not make an outer logging wrapper the condition for dispatch completion.
+- Do not leave stale wrapper processes alive after the underlying builder command exits.
+
+Reason: dispatch waits for the receiving Codex turn to finish. A wrapper pipeline can remain alive after the real builder process exits, causing a false dispatch hang even when artifacts were already built.
+
 ## Desktop Artifact Rule
 
 Do not silently substitute Electron for Tauri.
