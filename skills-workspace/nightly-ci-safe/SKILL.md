@@ -22,6 +22,7 @@ The goal is to get one truthful failure inventory from full CI, fix failures in 
 7. Repeat the cycle of `inventory failures -> fix all fixable -> rerun only allowed fixed failures` at most 5 times.
 8. If the failed-test inventory reaches zero, treat that as all green for the night; do not spend another full CI run trying to reconfirm it.
 9. Prioritize tests added in the scope of the current seed/work and tests most relevant to the artifacts that will ship tonight.
+10. For Axolync builder-backed runs, full CI means the builder-owned `full-ci` command/profile. Do not substitute report-only, no-ci, dry-run, sanity, GitHub metadata, or inventory-only evidence when the user asked for full CI.
 
 ## Workflow
 
@@ -34,6 +35,22 @@ Do not start this workflow while queue tasks are still incomplete.
 Use the single full-CI pass only to collect the truthful failure inventory.
 
 Do not treat it as the main validation loop.
+
+For Axolync workspaces, the governing command is:
+
+```powershell
+npm run full-ci
+```
+
+Before running the expensive pass, verify the same checkout can pass the non-executing proof gate:
+
+```powershell
+npm run full-ci:inventory
+```
+
+The proof gate is only a candidate inventory check. It is not the full-CI run. It is valid only if it reports `profile=full-ci`, `workflow=local-full`, `source=local-authoritative`, and candidate counts at the configured full-CI scale, including an `axolync-browser` candidate count near the historical local-full baseline rather than the reduced sanity/report scale.
+
+If `npm run full-ci:inventory` fails, stop and report that full-CI proof is blocked. Do not replace it with `report:generate`, `report:noci`, `report:generate:dry`, `sanity`, GitHub run metadata, or a report that is mostly `not_run`.
 
 Capture at least:
 
@@ -119,3 +136,21 @@ Do not burn the nightly budget chasing broad unrelated failures unless they bloc
 - Do not silently exceed the 5-iteration cap.
 - Do not drift into a second full-CI run for the same nightly session.
 - If a fix might have created some new unrelated regression outside the allowed rerun scope, accept that risk for the night and report it plainly instead of exploding runtime again.
+- Do not call a run full-CI proof if builder/browser rows are mostly `not_run`.
+- Do not call a report-only/no-ci/sanity run a nightly-safe full run.
+
+## Final Handoff Checklist
+
+When reporting completion, include:
+
+- exact full-CI command used
+- whether `npm run full-ci:inventory` passed before the run
+- final mirror/report path if mirroring was requested
+- per-repo workflow, source, testSource, total, passed, failed, skipped, and not_run counts
+- explicit browser local-full or approved-equivalent executed count
+- every pushed fix commit, or `none`
+- `FULL CI PROOF NOT VALID` if the run used any substituted mode or the proof gate did not pass
+
+## Dispatch-Specific Guard
+
+If an incoming dispatch explicitly says `$nightly-ci-safe`, `nightly ci safe`, or "full CI", treat the Axolync builder `full-ci` command/profile as mandatory unless the dispatch itself explicitly narrows the scope away from full CI. If the requested checkout cannot run `full-ci`, return a blocker instead of quietly downgrading to report-only, no-ci, dry-run, smoke, sanity, or inventory-only validation.
