@@ -23,6 +23,7 @@ The goal is to get one truthful failure inventory from full CI, fix failures in 
 8. If the failed-test inventory reaches zero, treat that as all green for the night; do not spend another full CI run trying to reconfirm it.
 9. Prioritize tests added in the scope of the current seed/work and tests most relevant to the artifacts that will ship tonight.
 10. For Axolync builder-backed runs, full CI means the builder-owned `full-ci` command/profile. Do not substitute report-only, no-ci, dry-run, sanity, GitHub metadata, or inventory-only evidence when the user asked for full CI.
+11. When a post-fix continuation inventory is needed, use the Builder candidate skip-list planner instead of starting another broad full-CI run.
 
 ## Workflow
 
@@ -42,6 +43,8 @@ For Axolync workspaces, the governing command is:
 npm run full-ci
 ```
 
+The Builder default full-CI preset is non-fail-fast. Do not add `--fail-fast` unless the user explicitly asks for early termination.
+
 Before running the expensive pass, verify the same checkout can pass the non-executing proof gate:
 
 ```powershell
@@ -58,6 +61,22 @@ Capture at least:
 - failing suites
 - last known durations
 - which failures are relevant to the work changed tonight
+- `output/latest/reports/full-ci-test-ledger-latest.json`
+- `output/latest/reports/full-ci-passed-skip-list-latest.txt`
+
+If you need to materialize the passed-test skip-list from an already completed full-CI report without rerunning full CI, use:
+
+```powershell
+npm run full-ci:remaining
+```
+
+If the source full-CI report is not `output/latest/reports/ci-latest.json`, pass it explicitly:
+
+```powershell
+npm run full-ci:remaining -- --ci-report <path-to-ci-latest.json>
+```
+
+The resulting `full-ci-passed-skip-list-latest.txt` is candidate-planner input, not a claim that another full-CI execution has occurred.
 
 ### 3. Partition The Failures
 
@@ -83,6 +102,14 @@ Instead:
 2. fix every failure in that batch that is realistically fixable in the current pass
 3. only then prepare the rerun batch
 
+Before any broad continuation after fixes, ask Builder for the remaining candidate plan instead:
+
+```powershell
+npm run full-ci:plan -- --skip-list output/latest/reports/full-ci-passed-skip-list-latest.txt
+```
+
+If the plan reports zero remaining candidates, do not run another full CI. If it reports remaining candidates, use that output to choose narrow reruns only.
+
 ### 5. Rerun Only The Allowed Fixed Failures
 
 The rerun batch must contain only:
@@ -106,6 +133,8 @@ An iteration means:
 2. fix the whole current batch
 3. rerun only the allowed fixed failures
 4. collect the next remaining-failure inventory
+
+Use `npm run full-ci:plan -- --skip-list <skip-list>` as the remaining-candidate inventory source. Do not emulate progress by repeatedly rerunning full CI.
 
 Stop after 5 iterations even if failures remain.
 
