@@ -76,7 +76,7 @@ If the source full-CI report is not `output/latest/reports/ci-latest.json`, pass
 npm run full-ci:remaining -- --ci-report <path-to-ci-latest.json>
 ```
 
-The resulting `full-ci-passed-skip-list-latest.txt` is candidate-planner input, not a claim that another full-CI execution has occurred.
+The resulting `full-ci-passed-skip-list-latest.txt` is dry-run continuation input, not a claim that another full-CI execution has occurred.
 
 ### 3. Partition The Failures
 
@@ -102,10 +102,10 @@ Instead:
 2. fix every failure in that batch that is realistically fixable in the current pass
 3. only then prepare the rerun batch
 
-Before any broad continuation after fixes, ask Builder for the remaining candidate plan instead:
+Before any broad continuation after fixes, ask Builder for the dry-run remaining-candidate view instead:
 
 ```powershell
-npm run full-ci:plan -- --skip-list output/latest/reports/full-ci-passed-skip-list-latest.txt
+npm run full-ci:dry-run -- --skip-list output/latest/reports/full-ci-passed-skip-list-latest.txt
 ```
 
 If the plan reports zero remaining candidates, do not run another full CI. If it reports remaining candidates, use that output to choose narrow reruns only.
@@ -134,7 +134,7 @@ An iteration means:
 3. rerun only the allowed fixed failures
 4. collect the next remaining-failure inventory
 
-Use `npm run full-ci:plan -- --skip-list <skip-list>` as the remaining-candidate inventory source. Do not emulate progress by repeatedly rerunning full CI.
+Use `npm run full-ci:dry-run -- --skip-list <skip-list>` as the remaining-candidate inventory source. Do not emulate progress by repeatedly rerunning full CI.
 
 Stop after 5 iterations even if failures remain.
 
