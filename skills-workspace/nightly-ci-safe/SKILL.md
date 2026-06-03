@@ -48,12 +48,12 @@ The Builder default full-CI preset is non-fail-fast. Do not add `--fail-fast` un
 Before running the expensive pass, verify the same checkout can pass the non-executing proof gate:
 
 ```powershell
-npm run full-ci:inventory
+npm run full-ci -- --dry-run
 ```
 
 The proof gate is only a candidate inventory check. It is not the full-CI run. It is valid only if it reports `profile=full-ci`, `workflow=local-full`, `source=local-authoritative`, and candidate counts at the configured full-CI scale, including an `axolync-browser` candidate count near the historical local-full baseline rather than the reduced sanity/report scale.
 
-If `npm run full-ci:inventory` fails, stop and report that full-CI proof is blocked. Do not replace it with `report:generate`, `report:noci`, `report:generate:dry`, `sanity`, GitHub run metadata, or a report that is mostly `not_run`.
+If `npm run full-ci -- --dry-run` fails, stop and report that full-CI proof is blocked. Do not replace it with `report:generate`, `report:noci`, `report:generate:dry`, `sanity`, GitHub run metadata, or a report that is mostly `not_run`.
 
 Capture at least:
 
@@ -105,7 +105,7 @@ Instead:
 Before any broad continuation after fixes, ask Builder for the dry-run remaining-candidate view instead:
 
 ```powershell
-npm run full-ci:dry-run -- --skip-list output/latest/reports/full-ci-passed-skip-list-latest.txt
+npm run full-ci -- --dry-run --skip-list output/latest/reports/full-ci-passed-skip-list-latest.txt
 ```
 
 If the plan reports zero remaining candidates, do not run another full CI. If it reports remaining candidates, use that output to choose narrow reruns only.
@@ -134,7 +134,7 @@ An iteration means:
 3. rerun only the allowed fixed failures
 4. collect the next remaining-failure inventory
 
-Use `npm run full-ci:dry-run -- --skip-list <skip-list>` as the remaining-candidate inventory source. Do not emulate progress by repeatedly rerunning full CI.
+Use `npm run full-ci -- --dry-run --skip-list <skip-list>` as the remaining-candidate view. Do not emulate progress by repeatedly rerunning full CI.
 
 Stop after 5 iterations even if failures remain.
 
@@ -173,12 +173,12 @@ Do not burn the nightly budget chasing broad unrelated failures unless they bloc
 When reporting completion, include:
 
 - exact full-CI command used
-- whether `npm run full-ci:inventory` passed before the run
+- whether `npm run full-ci -- --dry-run` passed before the run
 - final mirror/report path if mirroring was requested
 - per-repo workflow, source, testSource, total, passed, failed, skipped, and not_run counts
 - explicit browser local-full or approved-equivalent executed count
 - every pushed fix commit, or `none`
-- `FULL CI PROOF NOT VALID` if the run used any substituted mode or the proof gate did not pass
+- `FULL CI PROOF NOT VALID` if the run used any substituted mode, the proof gate did not pass, candidate/executed counts cannot be reconciled, Browser rows are collapsed instead of individual assertions, or the report is mostly `not_run`
 
 ## Dispatch-Specific Guard
 
