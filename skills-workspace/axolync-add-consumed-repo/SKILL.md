@@ -62,8 +62,11 @@ Classify new repos by role, not by legacy naming. Artifact packaging, preinstall
 For every consumed repo:
 
 - Add or update repo descriptors in the owning repo and consumer repo when the descriptor model applies.
+- Treat repo-local `axolync.repo.toml` exports as the only accepted source for repo-owned production surfaces in newly created or newly onboarded repos.
+- Declare applicable `[exports.tests]`, `[exports.packaging]`, `[[exports.generated_outputs]]`, `[[exports.inventories]]`, `[exports.docs]`, and `[[consumes.repos]]` entries in the repo descriptor before adding consumer/report wiring.
 - For addon-pack repos, set descriptor roles to `["consumer", "consumable"]`, declare member addon repos under `consumes.repos` with `use = "addon-pack-member"`, and declare the final pack artifact as an export. Do not model generated member ZIPs as consumed repos.
-- Update builder repo discovery only for builder-owned fields such as local path, submodule path, submodule URL, version authority, clean paths, and command wiring.
+- Update builder repo discovery only for builder-owned fields such as `id`, `localPath`, `submodulePath`, `submoduleUrl`, `versionFile`, and `cleanPaths`.
+- Do not add new repo-owned fallback authority to builder `config/repos.json`. Forbidden fields for new onboarding include `buildCommands`, `sanityCommands`, `testCommands`, `addonPackage`, `themePackage`, `addonPackPackage`, `plugin`, `adapterCatalogManifestPath`, and `adapterCatalogManifestProfileId`.
 - Add tests that prove the repo is discoverable from the intended consumer, not just present on disk.
 - Keep builder-owned fields and repo-owned descriptor fields separated. If a field is transitional, document and test the boundary.
 
@@ -72,12 +75,14 @@ For repos that participate in reports:
 - Add report profile inclusion where the report should inspect the repo.
 - Add task/seed metadata references if the repo has project seeds or spec tasks.
 - Add platform-report or inventory tests that prove the repo's rows are present and truthful.
+- Add a descriptor fallback warning regression that proves the new repo emits no descriptor fallback warnings when its descriptor checkout is available.
+- If a local checkout is absent, classify that as managed-checkout/environment debt, not proof that repo-owned descriptor exports are invalid.
 
 For addon, addon-pack, legacy plugin, or adapter-catalog repos:
 
-- Add adapter catalog manifest paths and profile ids when the repo exposes runtime adapters.
-- Add addon package ZIP metadata when the repo should produce an installable addon artifact.
-- Add package commands and output ZIP paths used by builder.
+- Add adapter catalog inventories in `axolync.repo.toml` when the repo exposes runtime adapters.
+- Add addon package ZIP metadata in descriptor packaging/generated output exports when the repo should produce an installable addon artifact.
+- Add package commands and output ZIP paths in descriptor exports used by builder.
 - Add installable-artifact report coverage.
 - Add preinstall metadata only when the repo should ship preinstalled in an artifact profile.
 - Add or update build-preset TOML preinstalled addon lists only when the product artifact should include the addon by default.
@@ -115,10 +120,11 @@ For agent/tooling repos:
 2. Classify the repo type and list applicable consumption surfaces.
 3. Inspect existing nearby repo entries and mirror their structure where the classification matches.
 4. Update descriptors before consumer wiring when descriptor authority exists.
-5. Update builder/report/catalog/artifact wiring only for applicable surfaces.
+5. Update builder/report/catalog/artifact wiring only for applicable surfaces, keeping `config/repos.json` limited to builder-owned discovery fields.
 6. Add focused tests for descriptor discovery, builder config projection, report inclusion, adapter catalog inclusion, and artifact ZIP publication as applicable.
-7. Run the narrowest relevant tests first.
-8. If a full build/report is requested, hand off to the build/mirror workflow after the repo wiring tests pass.
+7. Add warning-proof tests that fail if descriptor-owned surfaces fall back to legacy builder config while the descriptor checkout is present.
+8. Run the narrowest relevant tests first.
+9. If a full build/report is requested, hand off to the build/mirror workflow after the repo wiring tests pass.
 
 ## Review Checklist
 
@@ -136,7 +142,8 @@ Before calling the work complete, answer these explicitly in your final response
 ## Common Failure Modes
 
 - Adding only a local sibling repo without builder/report discovery.
-- Adding `config/repos.json` without repo descriptors or boundary tests.
+- Adding repo-owned commands, package metadata, or catalog paths to `config/repos.json` instead of descriptor exports.
+- Adding `config/repos.json` entries without repo descriptors or boundary tests.
 - Adding an addon package ZIP but forgetting report/installable artifact coverage.
 - Adding an addon to preinstalled profiles when it should only be installable.
 - Forgetting adapter catalog manifest metadata for a runtime adapter repo.
