@@ -78,7 +78,7 @@ Read first when you need:
 - package schema questions
 - query compatibility questions
 
-## axolync-songmetadata-plugin
+## axolync-songmetadata-adapters
 
 Role:
 

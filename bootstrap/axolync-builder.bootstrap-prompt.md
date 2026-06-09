@@ -27,10 +27,10 @@ Hard rules:
   - `axolync-addon-itunes`
   - `axolync-addon-spotify`
   - `axolync-addon-musicbrainz`
-  - `axolync-songmetadata-plugin`
-  - `axolync-lyricflow-plugin`
-  - `axolync-songsense-plugin`
-  - `axolync-syncengine-plugin`
+  - `axolync-songmetadata-adapters`
+  - `axolync-lyricflow-adapters`
+  - `axolync-songsense-adapters`
+  - `axolync-syncengine-adapters`
 - If `axolync-builder/scripts/bootstrap-axolync-repos.ps1` or `axolync-builder/scripts/bootstrap-axolync-repos.sh` can do that while staying entirely inside the current workspace, prefer it with a workspace-local base dir plus shallow mode.
 - Do not run builds, tests, CI, reports, packaging, APK generation, `versions:sync`, or long verification flows.
 - Read only the docs listed below. For long docs, skim examples, install steps, and CI snippets unless they change authority, workflow, topology, runtime model, or compatibility rules.
