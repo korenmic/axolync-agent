@@ -30,7 +30,8 @@ This skill must not replace or reinterpret TACTIC. TACTIC remains responsible fo
 3. Invoke `$tactic` for the intended undone enqueued tasks.
 4. Preserve all TACTIC rules, including per-task commits.
 5. Push committed work to the agreed/current/master branch as context dictates.
-6. Notify when the push completes.
+6. For PR-targeted pushes, run the PR CI regression gate after the push and before ready handoff.
+7. Notify when the push and any required PR CI gate complete successfully.
 
 ## Task Source And TACTIC Arguments
 
@@ -84,6 +85,23 @@ Branch priority:
 
 If branch inference is unsafe, ask before pushing. Do not silently create a new branch. If push fails, report the exact blocker and do not send a push-complete notification.
 
+## PR CI Regression Gate
+
+When `$implement` pushes to a PR-targeted branch, or the current context explicitly identifies a PR, the implementation session owns the remote check handoff too.
+
+Before pushing, capture the current GitHub check baseline when practical. A missing baseline is not fatal, but it must be mentioned if it affects classification. After pushing, wait for GitHub checks on the pushed PR head to complete when possible.
+
+Classify the post-push result:
+
+- `pass`: all observed post-push checks are successful or neutral
+- `pr-regression`: a check that previously passed now fails, or another observed failure is attributable to the pushed PR
+- `pre-existing-failure`: a check was already failing before this push and no evidence shows this push caused it
+- `unknown`: PR lookup or check results are unavailable
+
+If the gate reports `pr-regression`, `$implement` must not claim completion or send a successful ready/push-complete handoff. Diagnose and fix the PR-caused failure when it is in scope, then push and check again. If a failure is pre-existing, unrelated, environmental, or unknown, report that explicitly with the evidence instead of treating it as success.
+
+This gate is not required for local-only, no-push, or normal master work unless the user explicitly asks for GitHub CI validation.
+
 ## Verification
 
 When changing this skill, run:
@@ -104,4 +122,4 @@ python -m unittest tests.test_queue_status tests.test_enqueue tests.test_impleme
 - `$notify` owns notification transport and formatting defaults.
 - `$enqueue` owns adding new queue records.
 - `$queue-status` owns read-only queue health reporting.
-- `$implement` owns only the wrapper handoff, final push decision, and push-complete notification.
+- `$implement` owns only the wrapper handoff, final push decision, PR CI handoff validation for PR-targeted pushes, and push-complete notification.

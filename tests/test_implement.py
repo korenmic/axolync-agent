@@ -89,6 +89,54 @@ class ImplementTests(unittest.TestCase):
         self.assertIn("git push origin master", message)
         self.assertIn("non-fast-forward", message)
 
+    def test_pr_ci_gate_passes_when_post_push_checks_pass(self):
+        result = implement_tasks.classify_pr_ci_gate(
+            baseline_checks=[implement_tasks.CheckSnapshot("test", "success")],
+            post_push_checks=[implement_tasks.CheckSnapshot("test", "success")],
+        )
+
+        self.assertTrue(result.passed)
+        self.assertEqual(result.status, implement_tasks.PR_CI_GATE_PASS)
+        self.assertEqual(result.blockers, ())
+
+    def test_pr_ci_gate_blocks_previously_passing_check_now_failing(self):
+        result = implement_tasks.classify_pr_ci_gate(
+            baseline_checks=[implement_tasks.CheckSnapshot("test", "success")],
+            post_push_checks=[implement_tasks.CheckSnapshot("test", "failure")],
+        )
+
+        self.assertFalse(result.passed)
+        self.assertEqual(result.status, implement_tasks.PR_CI_GATE_REGRESSION)
+        self.assertEqual(result.blockers, ("test",))
+
+    def test_pr_ci_gate_classifies_already_failing_check_as_pre_existing(self):
+        result = implement_tasks.classify_pr_ci_gate(
+            baseline_checks=[implement_tasks.CheckSnapshot("test", "failure")],
+            post_push_checks=[implement_tasks.CheckSnapshot("test", "failure")],
+        )
+
+        self.assertEqual(result.status, implement_tasks.PR_CI_GATE_PRE_EXISTING)
+        self.assertEqual(result.blockers, ("test",))
+
+    def test_pr_ci_gate_reports_unknown_when_post_push_data_is_unavailable(self):
+        result = implement_tasks.classify_pr_ci_gate(
+            baseline_checks=[implement_tasks.CheckSnapshot("test", "success")],
+            post_push_checks=None,
+        )
+
+        self.assertEqual(result.status, implement_tasks.PR_CI_GATE_UNKNOWN)
+        self.assertFalse(result.post_push_available)
+
+    def test_pr_ci_gate_formats_blocker_names(self):
+        result = implement_tasks.classify_pr_ci_gate(
+            baseline_checks=[implement_tasks.CheckSnapshot("test", "success")],
+            post_push_checks=[implement_tasks.CheckSnapshot("test", "failure")],
+        )
+        message = implement_tasks.format_pr_ci_gate_result(result)
+
+        self.assertIn("pr-regression", message)
+        self.assertIn("test", message)
+
 
 if __name__ == "__main__":
     unittest.main()

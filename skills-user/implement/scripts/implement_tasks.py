@@ -17,6 +17,12 @@ IMPLEMENT_NOTIFY_EVENTS = (
     "tactic-finished",
     "push-complete",
 )
+PASSING_CHECK_CONCLUSIONS = frozenset({"success", "neutral", "skipped"})
+UNKNOWN_CHECK_CONCLUSIONS = frozenset({"", "unknown", "pending", "queued", "in_progress", "requested", "waiting"})
+PR_CI_GATE_PASS = "pass"
+PR_CI_GATE_REGRESSION = "pr-regression"
+PR_CI_GATE_PRE_EXISTING = "pre-existing-failure"
+PR_CI_GATE_UNKNOWN = "unknown"
 
 
 @dataclass(frozen=True)
@@ -48,6 +54,26 @@ class PushPlan:
     source: str
     requires_clarification: bool
     reason: str
+
+
+@dataclass(frozen=True)
+class CheckSnapshot:
+    name: str
+    conclusion: str | None
+    cause: str | None = None
+
+
+@dataclass(frozen=True)
+class PrCiGateResult:
+    status: str
+    blockers: tuple[str, ...]
+    details: tuple[str, ...]
+    baseline_available: bool
+    post_push_available: bool
+
+    @property
+    def passed(self) -> bool:
+        return self.status == PR_CI_GATE_PASS
 
 
 def resolve_implement_plan(tactic_arguments: Iterable[str] | None = None) -> ImplementPlan:
@@ -105,6 +131,124 @@ def can_push_after_tactic(all_runnable_complete: bool, committed_work: bool, blo
 
 def format_push_failure(command: str, error_text: str) -> str:
     return f"Push failed while running {command!r}: {error_text.strip()}"
+
+
+def normalize_check_conclusion(conclusion: str | None) -> str:
+    return (conclusion or "").strip().lower().replace(" ", "_")
+
+
+def is_check_passing(snapshot: CheckSnapshot) -> bool:
+    return normalize_check_conclusion(snapshot.conclusion) in PASSING_CHECK_CONCLUSIONS
+
+
+def is_check_unknown(snapshot: CheckSnapshot) -> bool:
+    return normalize_check_conclusion(snapshot.conclusion) in UNKNOWN_CHECK_CONCLUSIONS
+
+
+def is_check_failing(snapshot: CheckSnapshot) -> bool:
+    return not is_check_passing(snapshot) and not is_check_unknown(snapshot)
+
+
+def classify_pr_ci_gate(
+    baseline_checks: Iterable[CheckSnapshot] | None,
+    post_push_checks: Iterable[CheckSnapshot] | None,
+    *,
+    pr_context_available: bool = True,
+) -> PrCiGateResult:
+    if not pr_context_available:
+        return PrCiGateResult(
+            status=PR_CI_GATE_UNKNOWN,
+            blockers=(),
+            details=("PR context unavailable; cannot verify GitHub checks.",),
+            baseline_available=baseline_checks is not None,
+            post_push_available=post_push_checks is not None,
+        )
+
+    baseline_available = baseline_checks is not None
+    post_push_available = post_push_checks is not None
+    post_push = tuple(post_push_checks or ())
+    if not post_push:
+        return PrCiGateResult(
+            status=PR_CI_GATE_UNKNOWN,
+            blockers=(),
+            details=("Post-push GitHub check data unavailable.",),
+            baseline_available=baseline_available,
+            post_push_available=post_push_available,
+        )
+
+    unknown_checks = tuple(check.name for check in post_push if is_check_unknown(check))
+    if unknown_checks:
+        return PrCiGateResult(
+            status=PR_CI_GATE_UNKNOWN,
+            blockers=unknown_checks,
+            details=("One or more post-push checks have unknown or incomplete status.",),
+            baseline_available=baseline_available,
+            post_push_available=post_push_available,
+        )
+
+    failing_checks = tuple(check for check in post_push if is_check_failing(check))
+    if not failing_checks:
+        return PrCiGateResult(
+            status=PR_CI_GATE_PASS,
+            blockers=(),
+            details=("All observed post-push PR checks passed or were neutral.",),
+            baseline_available=baseline_available,
+            post_push_available=post_push_available,
+        )
+
+    baseline_by_name = {check.name: check for check in (baseline_checks or ())}
+    regressions: list[str] = []
+    pre_existing: list[str] = []
+    unknown_failures: list[str] = []
+
+    for check in failing_checks:
+        cause = (check.cause or "").strip().lower()
+        if cause == "pr-caused":
+            regressions.append(check.name)
+            continue
+        if cause in {"pre-existing", "unrelated", "environment"}:
+            pre_existing.append(check.name)
+            continue
+
+        baseline = baseline_by_name.get(check.name)
+        if baseline and is_check_passing(baseline):
+            regressions.append(check.name)
+        elif baseline and is_check_failing(baseline):
+            pre_existing.append(check.name)
+        elif baseline_available:
+            regressions.append(check.name)
+        else:
+            unknown_failures.append(check.name)
+
+    if regressions:
+        return PrCiGateResult(
+            status=PR_CI_GATE_REGRESSION,
+            blockers=tuple(regressions),
+            details=("Previously passing or newly observed checks failed after the PR push.",),
+            baseline_available=baseline_available,
+            post_push_available=post_push_available,
+        )
+    if unknown_failures:
+        return PrCiGateResult(
+            status=PR_CI_GATE_UNKNOWN,
+            blockers=tuple(unknown_failures),
+            details=("Post-push checks failed, but no baseline was available to prove whether they are new.",),
+            baseline_available=baseline_available,
+            post_push_available=post_push_available,
+        )
+    return PrCiGateResult(
+        status=PR_CI_GATE_PRE_EXISTING,
+        blockers=tuple(pre_existing),
+        details=("Observed failures were already failing or marked non-PR-caused.",),
+        baseline_available=baseline_available,
+        post_push_available=post_push_available,
+    )
+
+
+def format_pr_ci_gate_result(result: PrCiGateResult) -> str:
+    blockers = ", ".join(result.blockers) if result.blockers else "none"
+    details = " ".join(result.details)
+    return f"PR CI gate {result.status}: blockers={blockers}. {details}"
 
 
 def build_worktree_warning(repo_path: Path, status_output: str) -> WorktreeWarning:
