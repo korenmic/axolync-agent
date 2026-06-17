@@ -70,6 +70,15 @@ For every consumed repo:
 - Add tests that prove the repo is discoverable from the intended consumer, not just present on disk.
 - Keep builder-owned fields and repo-owned descriptor fields separated. If a field is transitional, document and test the boundary.
 
+For repos that participate in Builder mixed GitHub/local CI proof:
+
+- Add or verify a repo-local GitHub Actions workflow with `push`, `pull_request`, and `workflow_dispatch` triggers.
+- The workflow must run the repo's GitHub-safe test entrypoint or explicitly document that the repo has zero GitHub-safe tests.
+- The workflow must emit parseable test output or a stable artifact that Builder can ingest as GitHub-safe proof.
+- Builder orchestrates one GitHub Actions run per repo/ref. Do not create one repo workflow that clones and tests every other Axolync sibling repo.
+- GitHub proof is valid only for the exact repo HEAD SHA being validated. Older PR runs or stale branch runs must be rejected as proof.
+- If a new repo has no tests yet, state that explicitly in the descriptor/review notes so Builder can account for zero candidates without treating the repo as failed.
+
 For repos that participate in reports:
 
 - Add report profile inclusion where the report should inspect the repo.
@@ -138,6 +147,8 @@ Before calling the work complete, answer these explicitly in your final response
 - Are seeds/spec tasks expected? If yes, where are they indexed?
 - Are contracts unchanged intentionally, or changed with schema/fixture coverage?
 - Which tests prove the wiring?
+- Does the repo expose a GitHub-safe workflow contract (`push`, `pull_request`, `workflow_dispatch`) or explicitly declare zero GitHub-safe tests?
+- Can Builder ingest exact-HEAD GitHub proof for this repo without relying on stale runs or sibling checkouts?
 
 ## Common Failure Modes
 
