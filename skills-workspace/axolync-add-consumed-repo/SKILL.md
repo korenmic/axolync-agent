@@ -78,6 +78,9 @@ For repos that participate in Builder mixed GitHub/local CI proof:
 - Builder orchestrates one GitHub Actions run per repo/ref. Do not create one repo workflow that clones and tests every other Axolync sibling repo.
 - GitHub proof is valid only for the exact repo HEAD SHA being validated. Older PR runs or stale branch runs must be rejected as proof.
 - If a new repo has no tests yet, state that explicitly in the descriptor/review notes so Builder can account for zero candidates without treating the repo as failed.
+- Split full-CI proof is an explicit Builder mode, not implied by ordinary reports. Future repos must be compatible with `full-ci -- --github-safe-cloud`: GitHub-safe tests run in the repo-local workflow while GitHub-skipped-local tests remain local-only.
+- Report-only, no-ci, dry-run, sanity, and GitHub metadata-only outputs must not be described as split full-CI proof.
+- If Builder falls back from failed GitHub-safe cloud proof to local execution, preserve that state as visible fallback evidence. Do not call it clean cloud success.
 
 For repos that participate in reports:
 

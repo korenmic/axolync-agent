@@ -16,6 +16,9 @@ class AddConsumedRepoGithubSafeWorkflowContractTests(unittest.TestCase):
         self.assertIn("GitHub-safe", text)
         self.assertIn("exact repo HEAD SHA", text)
         self.assertIn("Do not create one repo workflow that clones and tests every other Axolync sibling repo", text)
+        self.assertIn("full-ci -- --github-safe-cloud", text)
+        self.assertIn("Report-only, no-ci, dry-run, sanity", text)
+        self.assertIn("visible fallback evidence", text)
 
 
 if __name__ == "__main__":

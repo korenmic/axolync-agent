@@ -23,7 +23,9 @@ The goal is to get one truthful failure inventory from full CI, fix failures in 
 8. If the failed-test inventory reaches zero, treat that as all green for the night; do not spend another full CI run trying to reconfirm it.
 9. Prioritize tests added in the scope of the current seed/work and tests most relevant to the artifacts that will ship tonight.
 10. For Axolync builder-backed runs, full CI means the builder-owned `full-ci` command/profile. Do not substitute report-only, no-ci, dry-run, sanity, GitHub metadata, or inventory-only evidence when the user asked for full CI.
-11. When a post-fix continuation inventory is needed, use the Builder candidate skip-list planner instead of starting another broad full-CI run.
+11. If the user explicitly asks for split GitHub/local proof, use Builder's explicit split flag (`npm run full-ci -- --github-safe-cloud`) rather than running GitHub proof and local proof as detached evidence.
+12. A split proof run that falls back from GitHub-safe cloud to local execution is not clean cloud success. Report it as fallback evidence and preserve the Builder report warning.
+13. When a post-fix continuation inventory is needed, use the Builder candidate skip-list planner instead of starting another broad full-CI run.
 
 ## Workflow
 
@@ -44,6 +46,14 @@ npm run full-ci
 ```
 
 The Builder default full-CI preset is non-fail-fast. Do not add `--fail-fast` unless the user explicitly asks for early termination.
+
+When the requester explicitly wants GitHub-safe tests offloaded to GitHub Actions and GitHub-skipped-local tests run locally, use:
+
+```powershell
+npm run full-ci -- --github-safe-cloud
+```
+
+Do not use this flag silently. The split mode is an explicit proof mode because it changes where part of the proof is executed.
 
 Before running the expensive pass, verify the same checkout can pass the non-executing proof gate:
 
