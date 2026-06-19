@@ -78,7 +78,8 @@ Use the requested mode:
 
 - `no-ci`: artifact build/report only, usually `npm run build:all -- --skip-tests` plus `npm run report:noci -- --mirror-destination E:\artifacts\axolync\`.
 - `partial-ci`: run only requested or latest-added focused tests, then build/report.
-- `full-ci`: run the standard testful builder flow.
+- `full-ci`: run Builder's maximal descriptor-aware validation flow. This is the only full-CI merge-proof mode; do not satisfy it with report-only, no-ci, dry-run, sanity, GitHub metadata, inventory-only evidence, or `full-ci-core`.
+- `full-ci-core`: run Builder's reduced/core-only validation flow. Use this only when the dispatch explicitly asks for reduced/core validation, and label the result as reduced rather than full merge proof.
 - `nightly-safe`: use the `nightly-ci-safe` skill from this workspace skill set and obey its rerun limits.
 
 If no mode is specified, ask only if ambiguity affects runtime or cost materially. Otherwise prefer the normal artifact/report flow requested by the dispatch.
