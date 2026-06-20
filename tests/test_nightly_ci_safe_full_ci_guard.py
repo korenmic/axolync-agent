@@ -11,6 +11,7 @@ class NightlyCiSafeFullCiGuardTests(unittest.TestCase):
         text = SKILL_PATH.read_text(encoding="utf-8")
 
         self.assertIn("npm run full-ci", text)
+        self.assertIn("maximal descriptor-aware", text)
         self.assertIn("npm run full-ci -- --dry-run", text)
         self.assertIn("FULL CI PROOF NOT VALID", text)
         self.assertIn("workflow=local-full", text)
@@ -45,6 +46,14 @@ class NightlyCiSafeFullCiGuardTests(unittest.TestCase):
 
         self.assertNotIn("full-ci:inventory", text)
         self.assertNotIn("full-ci:dry-run", text)
+
+    def test_skill_names_full_ci_core_as_reduced_only(self):
+        text = SKILL_PATH.read_text(encoding="utf-8")
+
+        self.assertIn("npm run full-ci-core", text)
+        self.assertIn("reduced/core-only", text)
+        self.assertIn("Never describe `full-ci-core` as maximal", text)
+        self.assertIn("return a blocker instead of quietly downgrading", text)
 
 
 if __name__ == "__main__":
