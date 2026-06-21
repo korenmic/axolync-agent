@@ -1,6 +1,7 @@
 import json
 import tempfile
 import unittest
+import zipfile
 from pathlib import Path
 
 from scripts.workspace_version_ops import (
@@ -8,6 +9,7 @@ from scripts.workspace_version_ops import (
     RepoEntry,
     RepoGitState,
     apply_version_updates,
+    artifact_evidence_for_repo,
     make_plan,
     make_text_table,
     next_minor_version,
@@ -110,6 +112,55 @@ class WorkspaceVersionOpsTests(unittest.TestCase):
                 "currentVersionSource": "package-json:package.json",
             }
             self.assertIn("blocked-dirty", make_text_table([row]))
+
+    def test_artifact_evidence_reports_aligned_zip_and_browser_versions(self):
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            repo = workspace / "axolync-addon-demo"
+            zip_path = repo / "artifacts" / "output" / "local_js" / "axolync-addon-demo-local_js.zip"
+            zip_path.parent.mkdir(parents=True)
+            browser_manifest = workspace / "axolync-browser" / "public" / "plugins" / "preinstalled" / "manifest.json"
+            browser_manifest.parent.mkdir(parents=True)
+            with zipfile.ZipFile(zip_path, "w") as archive:
+                archive.writestr("manifest.json", json.dumps({"addon": {"addon_id": "axolync-addon-demo", "version": "1.2.3"}}))
+            browser_manifest.write_text(json.dumps({"plugins": [{"id": "axolync-addon-demo", "version": "1.2.3"}]}), encoding="utf-8")
+            repo_entry = RepoEntry(
+                "axolync-addon-demo",
+                repo,
+                "test",
+                "package.json",
+                ("axolync-addon-demo",),
+                "artifacts/output/local_js/axolync-addon-demo-local_js.zip",
+                "axolync-addon-demo",
+            )
+
+            evidence = artifact_evidence_for_repo(repo_entry, "1.2.3", workspace)
+
+            self.assertEqual(evidence["status"], "ok")
+            self.assertEqual(evidence["versions"], ["zip:1.2.3", "browser:1.2.3"])
+
+    def test_artifact_evidence_reports_drift(self):
+        with tempfile.TemporaryDirectory() as temp:
+            workspace = Path(temp)
+            repo = workspace / "axolync-addon-demo"
+            zip_path = repo / "artifacts" / "output" / "local_js" / "axolync-addon-demo-local_js.zip"
+            zip_path.parent.mkdir(parents=True)
+            with zipfile.ZipFile(zip_path, "w") as archive:
+                archive.writestr("manifest.json", json.dumps({"addon": {"addon_id": "axolync-addon-demo", "version": "1.2.2"}}))
+            repo_entry = RepoEntry(
+                "axolync-addon-demo",
+                repo,
+                "test",
+                "package.json",
+                ("axolync-addon-demo",),
+                "artifacts/output/local_js/axolync-addon-demo-local_js.zip",
+                "axolync-addon-demo",
+            )
+
+            evidence = artifact_evidence_for_repo(repo_entry, "1.2.3", workspace)
+
+            self.assertEqual(evidence["status"], "drift")
+            self.assertIn("zip=1.2.2 authority=1.2.3", evidence["details"])
 
 
 if __name__ == "__main__":

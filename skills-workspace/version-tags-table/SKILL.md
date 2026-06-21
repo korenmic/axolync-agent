@@ -19,6 +19,8 @@ python axolync-agent/scripts/workspace_version_ops.py inventory --workspace-root
 - This skill is read-only. Do not commit, tag, push, checkout, pull, or mutate repos.
 - The default output is a CLI-shaped `.txt` file in the workspace root.
 - Use `.md` only when explicitly useful for a handoff.
+- `current` remains the authority version from the repo `versionFile` or latest semver tag.
+- The artifact evidence column reports generated package/browser metadata alignment only; it is not an alternate version authority.
 
 ## Useful Commands
 
