@@ -14,6 +14,7 @@ import json
 import re
 import subprocess
 import sys
+import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable
@@ -52,6 +53,8 @@ class RepoEntry:
     source: str
     version_file: str
     aliases: tuple[str, ...]
+    addon_package_zip_path: str = ""
+    preinstall_id: str = ""
 
 
 @dataclass(frozen=True)
@@ -210,6 +213,71 @@ def read_version_from_path(path: Path, kind: str) -> str:
     return ""
 
 
+def read_zip_addon_version(path: Path) -> tuple[str, str]:
+    try:
+        with zipfile.ZipFile(path) as archive:
+            manifest = json.loads(archive.read("manifest.json").decode("utf-8"))
+    except (OSError, KeyError, json.JSONDecodeError, zipfile.BadZipFile):
+        return "", ""
+    addon = manifest.get("addon") if isinstance(manifest.get("addon"), dict) else manifest
+    if not isinstance(addon, dict):
+        return "", ""
+    return str(addon.get("addon_id") or addon.get("id") or ""), str(addon.get("version") or "")
+
+
+def load_browser_preinstalled_versions(workspace_root: Path) -> dict[str, str]:
+    manifest_path = workspace_root / "axolync-browser" / "public" / "plugins" / "preinstalled" / "manifest.json"
+    if not manifest_path.exists():
+        return {}
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    versions: dict[str, str] = {}
+    for plugin in manifest.get("plugins", []):
+        if isinstance(plugin, dict) and plugin.get("id"):
+            versions[str(plugin["id"])] = str(plugin.get("version") or "")
+    return versions
+
+
+def artifact_evidence_for_repo(repo: RepoEntry, authority_version: str, workspace_root: Path) -> dict[str, Any]:
+    browser_versions = load_browser_preinstalled_versions(workspace_root)
+    versions: list[str] = []
+    details: list[str] = []
+    status = "not-applicable"
+
+    if repo.addon_package_zip_path:
+        zip_path = repo.path / repo.addon_package_zip_path
+        if not zip_path.exists():
+            status = "missing-zip"
+            details.append(f"missing zip {repo.addon_package_zip_path}")
+        else:
+            zip_addon_id, zip_version = read_zip_addon_version(zip_path)
+            if zip_version:
+                versions.append(f"zip:{zip_version}")
+            if authority_version and zip_version == authority_version:
+                status = "ok"
+            else:
+                status = "drift"
+                details.append(f"zip={zip_version or '(missing)'} authority={authority_version or '(missing)'}")
+            if zip_addon_id and repo.preinstall_id and zip_addon_id != repo.preinstall_id:
+                status = "drift"
+                details.append(f"zip addon id {zip_addon_id} != preinstall id {repo.preinstall_id}")
+
+    if repo.preinstall_id:
+        browser_version = browser_versions.get(repo.preinstall_id, "")
+        if browser_version:
+            versions.append(f"browser:{browser_version}")
+            if authority_version and browser_version == authority_version:
+                if status == "not-applicable":
+                    status = "ok"
+            else:
+                status = "drift"
+                details.append(f"browser={browser_version or '(missing)'} authority={authority_version or '(missing)'}")
+
+    return {"status": status, "versions": versions, "details": details}
+
+
 def discover_repos(workspace_root: Path, *, include_missing: bool = False) -> tuple[list[RepoEntry], list[dict[str, str]]]:
     workspace_root = workspace_root.resolve()
     builder_root = workspace_root / "axolync-builder"
@@ -257,6 +325,8 @@ def discover_repos(workspace_root: Path, *, include_missing: bool = False) -> tu
                 source=str(row.get("source") or "builder-consumed-repo"),
                 version_file=str(row.get("versionFile") or ""),
                 aliases=aliases,
+                addon_package_zip_path=str((row.get("addonPackage") or {}).get("zipPath") or ""),
+                preinstall_id=str(((row.get("addonPackage") or {}).get("preinstall") or {}).get("id") or ""),
             )
         )
     return repos, notices
@@ -508,9 +578,14 @@ def apply_plan(plan: BumpPlan, *, push: bool = False) -> BumpPlan:
     )
 
 
-def plan_rows(plans: list[BumpPlan]) -> list[dict[str, Any]]:
+def plan_rows(plans: list[BumpPlan], workspace_root: Path | None = None) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for plan in plans:
+        evidence = artifact_evidence_for_repo(plan.repo, plan.current_version, workspace_root) if workspace_root else {
+            "status": "not-collected",
+            "versions": [],
+            "details": [],
+        }
         rows.append(
             {
                 "repoId": plan.repo.repo_id,
@@ -529,13 +604,16 @@ def plan_rows(plans: list[BumpPlan]) -> list[dict[str, Any]]:
                 "tagOnly": plan.tag_only,
                 "dirtyStatus": list(plan.dirty_status),
                 "updatedPaths": list(plan.updated_paths),
+                "artifactEvidenceStatus": evidence["status"],
+                "artifactEvidenceVersions": evidence["versions"],
+                "artifactEvidenceDetails": evidence["details"],
             }
         )
     return rows
 
 
 def make_text_table(rows: list[dict[str, Any]], notices: list[dict[str, str]] | None = None) -> str:
-    headers = ["repo", "branch", "head", "current", "latest_tag", "next", "status", "source"]
+    headers = ["repo", "branch", "head", "current", "latest_tag", "next", "status", "evidence", "source"]
     table_rows = []
     for row in rows:
         table_rows.append(
@@ -547,6 +625,7 @@ def make_text_table(rows: list[dict[str, Any]], notices: list[dict[str, str]] | 
                 str(row["latestSemverTag"] or "-"),
                 str(row["proposedVersion"] or "-"),
                 str(row["status"]),
+                str(row.get("artifactEvidenceStatus") or "-"),
                 str(row["currentVersionSource"] or "-"),
             ]
         )
@@ -564,7 +643,7 @@ def make_text_table(rows: list[dict[str, Any]], notices: list[dict[str, str]] | 
 
 
 def make_markdown_table(rows: list[dict[str, Any]], notices: list[dict[str, str]] | None = None) -> str:
-    headers = ["repo", "branch", "head", "current", "latest tag", "next", "status", "source"]
+    headers = ["repo", "branch", "head", "current", "latest tag", "next", "status", "evidence", "source"]
     lines = ["| " + " | ".join(headers) + " |", "| " + " | ".join("---" for _ in headers) + " |"]
     for row in rows:
         values = [
@@ -575,6 +654,7 @@ def make_markdown_table(rows: list[dict[str, Any]], notices: list[dict[str, str]
             row["latestSemverTag"] or "-",
             row["proposedVersion"] or "-",
             row["status"],
+            row.get("artifactEvidenceStatus") or "-",
             row["currentVersionSource"] or "-",
         ]
         lines.append("| " + " | ".join(str(value).replace("|", "\\|") for value in values) + " |")
@@ -627,7 +707,7 @@ def build_plans(
 def command_inventory(args: argparse.Namespace) -> int:
     workspace_root, repos, notices = load_requested_repos(args)
     plans = build_plans(repos, include_tagged_head=args.include_tagged_head, require_branch=args.require_branch)
-    rows = plan_rows(plans)
+    rows = plan_rows(plans, workspace_root)
     payload = {"workspaceRoot": str(workspace_root), "mode": "inventory", "repos": rows, "notices": notices}
     emit_outputs(
         payload,
@@ -650,7 +730,7 @@ def command_plan_bump(args: argparse.Namespace) -> int:
                 raise SystemExit(f"Cannot pull dirty repo: {repo.repo_id}")
             pull_repo(repo)
     plans = build_plans(repos, include_tagged_head=args.include_tagged_head, require_branch=args.require_branch)
-    rows = plan_rows(plans)
+    rows = plan_rows(plans, workspace_root)
     payload = {"workspaceRoot": str(workspace_root), "mode": "plan-bump", "repos": rows, "notices": notices}
     emit_outputs(
         payload,
@@ -678,7 +758,7 @@ def command_apply_bump(args: argparse.Namespace) -> int:
     plans = build_plans(repos, include_tagged_head=args.include_tagged_head, require_branch=args.require_branch)
     blocked = [plan for plan in plans if plan.blocked]
     if blocked:
-        rows = plan_rows(plans)
+        rows = plan_rows(plans, workspace_root)
         payload = {"workspaceRoot": str(workspace_root), "mode": "apply-bump", "repos": rows, "notices": notices}
         emit_outputs(
             payload,
@@ -700,7 +780,7 @@ def command_apply_bump(args: argparse.Namespace) -> int:
         print(f"Applying {plan.repo.repo_id}: {plan.current_version} -> {plan.proposed_version} ({plan.tag_name})")
         applied.append(apply_plan(plan, push=args.push))
 
-    rows = plan_rows(applied)
+    rows = plan_rows(applied, workspace_root)
     payload = {"workspaceRoot": str(workspace_root), "mode": "apply-bump", "repos": rows, "notices": notices}
     emit_outputs(
         payload,
@@ -723,9 +803,11 @@ def command_verify(args: argparse.Namespace) -> int:
         state = inspect_git_state(repo)
         source = detect_version_source(repo)
         current_version = source.version if source else state.latest_semver_version
+        evidence = artifact_evidence_for_repo(repo, current_version, workspace_root)
         expected_tag = f"v{current_version}" if current_version else ""
         has_expected_tag = expected_tag in state.exact_tags if expected_tag else False
-        if not has_expected_tag:
+        evidence_failed = evidence["status"] in {"drift", "missing-zip"}
+        if not has_expected_tag or evidence_failed:
             failed = True
         rows.append(
             {
@@ -742,11 +824,14 @@ def command_verify(args: argparse.Namespace) -> int:
                 ),
                 "proposedVersion": "",
                 "proposedTag": expected_tag,
-                "status": "verified" if has_expected_tag else "blocked-missing-head-tag",
-                "reason": "" if has_expected_tag else f"expected tag at HEAD: {expected_tag}",
+                "status": "verified" if has_expected_tag and not evidence_failed else ("blocked-artifact-evidence-drift" if evidence_failed else "blocked-missing-head-tag"),
+                "reason": "; ".join(evidence["details"]) if evidence_failed else ("" if has_expected_tag else f"expected tag at HEAD: {expected_tag}"),
                 "tagOnly": source is None,
                 "dirtyStatus": list(state.dirty_status),
                 "updatedPaths": [],
+                "artifactEvidenceStatus": evidence["status"],
+                "artifactEvidenceVersions": evidence["versions"],
+                "artifactEvidenceDetails": evidence["details"],
             }
         )
     payload = {"workspaceRoot": str(workspace_root), "mode": "verify", "repos": rows, "notices": notices}

@@ -25,6 +25,8 @@ python axolync-agent/scripts/workspace_version_ops.py verify --workspace-root .
 - Pushes require `--push`. When the user directly asks to push, push both commits and annotated tags.
 - Do not force-push.
 - After applying, run `verify` and provide the before/after table.
+- Generated addon package ZIP manifests and browser preinstalled consumer metadata are evidence, not authority. A complete bump must regenerate/check that evidence so it matches the configured repo `versionFile`.
+- If `verify` reports `blocked-artifact-evidence-drift`, regenerate the affected addon package ZIPs and browser preinstalled metadata before pushing a version bump as complete.
 
 ## Useful Commands
 
