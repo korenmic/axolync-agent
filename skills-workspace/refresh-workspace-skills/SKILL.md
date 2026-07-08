@@ -12,3 +12,13 @@ This skill is workspace-only. Do not install, copy, or update skills in `~/.code
 ## Shortcut
 
 Use `$refresh-workspace-skills` as the canonical shortcut.
+
+## Safe Agent Repo Update
+
+Locate the `axolync-agent` repository before changing anything. Prefer the known sibling path when available, but verify it is a Git worktree before using it.
+
+Before pulling, inspect the repo state. If `axolync-agent` has uncommitted changes, untracked skill files, merge conflicts, or an in-progress operation, stop and report the exact blocker. Do not rename, delete, stash, reset, or overwrite dirty files.
+
+When the repo is clean, update only with a fast-forward pull from `origin/master`. If the pull cannot fast-forward, stop and report the current branch, local HEAD, upstream HEAD, and Git error.
+
+Do not keep working from a stale local skill tree after an update failure. Report that workspace refresh could not be proven current.

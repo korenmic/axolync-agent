@@ -6,7 +6,7 @@
   - Document `$refresh-workspace-skills` as the shortcut.
   - Keep it under `skills-workspace`; do not install it to the user homedir.
 
-- [ ] 2. Document safe agent repo update behavior
+- [x] 2. Document safe agent repo update behavior
   - Require locating `axolync-agent`.
   - Require dirty-state refusal before pulling.
   - Require fast-forward-only pull from `origin/master`.
