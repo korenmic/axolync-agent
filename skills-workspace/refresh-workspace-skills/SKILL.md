@@ -38,3 +38,13 @@ Report workspace skills that are:
 If the workspace has an existing Axolync bootstrap convention for exposing workspace skills, use that convention for safe repair. Do not invent a new layout unless the existing convention is absent and the user explicitly approves the fallback.
 
 Never overwrite dirty workspace skill files. If a repair would replace modified files, stop and report the exact files and the intended source path.
+
+## User Homedir And Runtime Reload Boundaries
+
+Do not mutate `~/.codex/skills` or any user-profile skill install when refreshing workspace skills. This workflow is only for workspace skill exposure.
+
+After update or repair, compare the workspace-visible skill names against `axolync-agent/skills-workspace` and report any remaining mismatch.
+
+If the current Codex session cannot dynamically reload newly exposed workspace skills, say that a new Codex session or workspace reload is required. Do not claim a skill is available in the active session unless it appears in the active skills list or the user confirms reload.
+
+If a skill exists on disk but is not active in the current session, report both facts separately.

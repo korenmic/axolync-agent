@@ -19,7 +19,7 @@
   - Permit safe repair using existing Axolync bootstrap convention.
   - Forbid overwriting dirty workspace skill files.
 
-- [ ] 4. Document user-homedir and runtime reload boundaries
+- [x] 4. Document user-homedir and runtime reload boundaries
   - Forbid mutating `~/.codex/skills`.
   - Require comparing visible workspace skills against `axolync-agent/skills-workspace`.
   - Require reporting when current Codex session cannot dynamically reload the skill list.
