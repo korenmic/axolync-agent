@@ -1,6 +1,6 @@
 # Tasks
 
-- [ ] 1. Create the `refresh-workspace-skills` workspace skill
+- [x] 1. Create the `refresh-workspace-skills` workspace skill
   - Add `skills-workspace/refresh-workspace-skills/SKILL.md`.
   - Use name `refresh-workspace-skills`.
   - Document `$refresh-workspace-skills` as the shortcut.
@@ -29,4 +29,3 @@
   - Add or update tests/scripts that verify `refresh-workspace-skills` is a valid workspace skill.
   - Assert the skill includes dirty-state refusal, no homedir mutation, workspace exposure verification, and runtime reload caveat.
   - Verify `$lssa` lists the new skill.
-
