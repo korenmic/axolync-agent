@@ -1,6 +1,6 @@
 # Tasks
 
-- [ ] 1. Create the `temp-headless-smoke` workspace skill
+- [x] 1. Create the `temp-headless-smoke` workspace skill
   - Add `skills-workspace/temp-headless-smoke/SKILL.md`.
   - Use name `temp-headless-smoke`.
   - Document `$temp-headless-smoke` as the shortcut.
@@ -27,4 +27,3 @@
   - Add or update tests/scripts that verify `temp-headless-smoke` is a valid workspace skill.
   - Assert the skill includes non-default port, cleanup, runner-owned test design, and report requirements.
   - Verify `$lssa` lists the new skill.
-
