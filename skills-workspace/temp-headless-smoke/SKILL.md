@@ -40,3 +40,18 @@ When reporting results, include:
 - each temporary headless test performed
 - whether temporary scripts or logs were removed
 - whether the temporary server was killed
+
+## Scoped Fix And Retest Rule
+
+If a temporary headless test proves a bug in the latest agreed design, you may fix that bug in scope and rerun the relevant temporary test immediately.
+
+Only fix the proven issue. Do not use this skill as permission for unrelated cleanup, broad refactors, behavior expansion, or permanent test infrastructure unless the user separately approves that work.
+
+Temporary smoke tests are evidence, not a replacement for committed unit tests, CI, artifact rebuilds, or manual merge gates. If a feature still needs those checks, say so explicitly.
+
+Report:
+
+- the bug the temporary test proved
+- the scoped fix applied, if any
+- the temporary test rerun after the fix
+- any remaining validation that still belongs outside this temporary smoke pass

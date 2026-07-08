@@ -17,7 +17,7 @@
   - Require temporary scripts/logs to stay untracked and be removed unless the user asks to keep them.
   - Require reporting the temporary port and tests performed.
 
-- [ ] 4. Document scoped bug fix and retest behavior
+- [x] 4. Document scoped bug fix and retest behavior
   - Authorize immediate scoped fixes when temporary tests prove a bug in the latest agreed design.
   - Require rerunning the relevant temporary test after the fix.
   - Warn against unrelated cleanup or behavior expansion.
