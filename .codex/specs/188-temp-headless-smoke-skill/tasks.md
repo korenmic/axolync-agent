@@ -6,7 +6,7 @@
   - Document `$temp-headless-smoke` as the shortcut.
   - Keep it under `skills-workspace`; do not install it to the user homedir.
 
-- [ ] 2. Document runner-owned temporary headless test design
+- [x] 2. Document runner-owned temporary headless test design
   - State that the agent must infer relevant tests from current task context, latest agreed design, and suspected risks.
   - State that the user does not need to provide exact scripts or click paths unless behavior is ambiguous.
   - Require tests to stay scoped to the current proof target.
