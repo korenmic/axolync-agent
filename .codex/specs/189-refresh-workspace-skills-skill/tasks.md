@@ -12,7 +12,7 @@
   - Require fast-forward-only pull from `origin/master`.
   - Require exact blocker reporting on failure.
 
-- [ ] 3. Document workspace skill exposure verification and repair
+- [x] 3. Document workspace skill exposure verification and repair
   - Require locating the current workspace root.
   - Require inspecting `<workspace>/.codex/skills`.
   - Require reporting missing, stale, copied, or incorrectly linked workspace skill exposure.

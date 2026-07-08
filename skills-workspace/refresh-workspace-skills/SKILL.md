@@ -22,3 +22,19 @@ Before pulling, inspect the repo state. If `axolync-agent` has uncommitted chang
 When the repo is clean, update only with a fast-forward pull from `origin/master`. If the pull cannot fast-forward, stop and report the current branch, local HEAD, upstream HEAD, and Git error.
 
 Do not keep working from a stale local skill tree after an update failure. Report that workspace refresh could not be proven current.
+
+## Workspace Skill Exposure
+
+Locate the current workspace root, then inspect `<workspace>/.codex/skills` and compare it with `axolync-agent/skills-workspace`.
+
+Report workspace skills that are:
+
+- missing from the workspace exposure path
+- stale compared with `axolync-agent/skills-workspace`
+- copied when the workspace convention expects a link
+- linked to the wrong source
+- dirty or locally modified inside the workspace exposure path
+
+If the workspace has an existing Axolync bootstrap convention for exposing workspace skills, use that convention for safe repair. Do not invent a new layout unless the existing convention is absent and the user explicitly approves the fallback.
+
+Never overwrite dirty workspace skill files. If a repair would replace modified files, stop and report the exact files and the intended source path.
