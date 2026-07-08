@@ -25,7 +25,7 @@
   - Require reporting when current Codex session cannot dynamically reload the skill list.
   - Forbid claiming active-session availability unless it is true.
 
-- [ ] 5. Add validation coverage for the skill
+- [x] 5. Add validation coverage for the skill
   - Add or update tests/scripts that verify `refresh-workspace-skills` is a valid workspace skill.
   - Assert the skill includes dirty-state refusal, no homedir mutation, workspace exposure verification, and runtime reload caveat.
   - Verify `$lssa` lists the new skill.

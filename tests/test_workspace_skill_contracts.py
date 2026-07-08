@@ -30,6 +30,27 @@ class WorkspaceSkillContractTests(unittest.TestCase):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, text)
 
+    def test_refresh_workspace_skills_documents_required_guards(self):
+        text = read_skill("refresh-workspace-skills")
+
+        required_phrases = [
+            "$refresh-workspace-skills",
+            "workspace-only",
+            "Do not install, copy, or update skills in `~/.codex/skills`",
+            "If `axolync-agent` has uncommitted changes",
+            "fast-forward pull from `origin/master`",
+            "inspect `<workspace>/.codex/skills`",
+            "missing from the workspace exposure path",
+            "linked to the wrong source",
+            "Never overwrite dirty workspace skill files",
+            "cannot dynamically reload newly exposed workspace skills",
+            "Do not claim a skill is available in the active session unless it appears in the active skills list",
+        ]
+
+        for phrase in required_phrases:
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, text)
+
 
 if __name__ == "__main__":
     unittest.main()
