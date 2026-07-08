@@ -23,7 +23,7 @@
   - Warn against unrelated cleanup or behavior expansion.
   - Warn that temporary smoke tests do not replace committed tests, CI, or rebuild gates.
 
-- [ ] 5. Add validation coverage for the skill
+- [x] 5. Add validation coverage for the skill
   - Add or update tests/scripts that verify `temp-headless-smoke` is a valid workspace skill.
   - Assert the skill includes non-default port, cleanup, runner-owned test design, and report requirements.
   - Verify `$lssa` lists the new skill.
