@@ -11,7 +11,7 @@
   - State that the user does not need to provide exact scripts or click paths unless behavior is ambiguous.
   - Require tests to stay scoped to the current proof target.
 
-- [ ] 3. Document temporary server and script hygiene
+- [x] 3. Document temporary server and script hygiene
   - Require a non-default temporary port.
   - Require tracking and killing the temporary server.
   - Require temporary scripts/logs to stay untracked and be removed unless the user asks to keep them.
