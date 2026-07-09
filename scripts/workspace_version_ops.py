@@ -150,6 +150,22 @@ def next_minor_version(value: str) -> str:
     return f"{major}.{minor + 1}.0"
 
 
+def next_patch_version(value: str) -> str:
+    parsed = parse_semver(value)
+    if not parsed:
+        raise ValueError(f"not a semver version: {value}")
+    major, minor, patch, _suffix = parsed
+    return f"{major}.{minor}.{patch + 1}"
+
+
+def next_bumped_version(value: str, bump: str) -> str:
+    if bump == "patch":
+        return next_patch_version(value)
+    if bump == "minor":
+        return next_minor_version(value)
+    raise ValueError(f"unsupported bump kind: {bump}")
+
+
 def read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
@@ -399,6 +415,7 @@ def make_plan(
     *,
     include_tagged_head: bool = False,
     require_branch: str = "master",
+    bump: str = "minor",
 ) -> BumpPlan:
     state = inspect_git_state(repo)
     version_source = detect_version_source(repo)
@@ -419,7 +436,7 @@ def make_plan(
     if not current_version or not parse_semver(current_version):
         return BumpPlan(repo, state, current_version, current_source, "", "", "blocked-no-semver", "no semver version source and no semver tag", tag_only, ())
 
-    next_version = next_minor_version(current_version)
+    next_version = next_bumped_version(current_version, bump)
     tag_name = f"v{next_version}"
     if tag_exists(repo, tag_name):
         return BumpPlan(repo, state, current_version, current_source, next_version, tag_name, "blocked-tag-collision", f"tag already exists: {tag_name}", tag_only, ())
@@ -432,7 +449,7 @@ def make_plan(
         proposed_version=next_version,
         tag_name=tag_name,
         status="tag-only-bump" if tag_only else "bump",
-        reason="minor bump planned",
+        reason=f"{bump} bump planned",
         tag_only=tag_only,
         dirty_status=(),
     )
@@ -700,13 +717,17 @@ def build_plans(
     *,
     include_tagged_head: bool,
     require_branch: str,
+    bump: str,
 ) -> list[BumpPlan]:
-    return [make_plan(repo, include_tagged_head=include_tagged_head, require_branch=require_branch) for repo in repos]
+    return [
+        make_plan(repo, include_tagged_head=include_tagged_head, require_branch=require_branch, bump=bump)
+        for repo in repos
+    ]
 
 
 def command_inventory(args: argparse.Namespace) -> int:
     workspace_root, repos, notices = load_requested_repos(args)
-    plans = build_plans(repos, include_tagged_head=args.include_tagged_head, require_branch=args.require_branch)
+    plans = build_plans(repos, include_tagged_head=args.include_tagged_head, require_branch=args.require_branch, bump=args.bump)
     rows = plan_rows(plans, workspace_root)
     payload = {"workspaceRoot": str(workspace_root), "mode": "inventory", "repos": rows, "notices": notices}
     emit_outputs(
@@ -729,7 +750,7 @@ def command_plan_bump(args: argparse.Namespace) -> int:
             if inspect_git_state(repo).dirty_status:
                 raise SystemExit(f"Cannot pull dirty repo: {repo.repo_id}")
             pull_repo(repo)
-    plans = build_plans(repos, include_tagged_head=args.include_tagged_head, require_branch=args.require_branch)
+    plans = build_plans(repos, include_tagged_head=args.include_tagged_head, require_branch=args.require_branch, bump=args.bump)
     rows = plan_rows(plans, workspace_root)
     payload = {"workspaceRoot": str(workspace_root), "mode": "plan-bump", "repos": rows, "notices": notices}
     emit_outputs(
@@ -755,7 +776,7 @@ def command_apply_bump(args: argparse.Namespace) -> int:
                 raise SystemExit(f"Cannot pull dirty repo: {repo.repo_id}")
             pull_repo(repo)
 
-    plans = build_plans(repos, include_tagged_head=args.include_tagged_head, require_branch=args.require_branch)
+    plans = build_plans(repos, include_tagged_head=args.include_tagged_head, require_branch=args.require_branch, bump=args.bump)
     blocked = [plan for plan in plans if plan.blocked]
     if blocked:
         rows = plan_rows(plans, workspace_root)
@@ -865,6 +886,7 @@ def add_common_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--include-missing", action="store_true", help="Include missing declared repos in notices.")
     parser.add_argument("--include-tagged-head", action="store_true", help="Plan a new bump even when HEAD already has a tag.")
     parser.add_argument("--require-branch", default="master", help="Required branch for bump planning. Empty disables the guard.")
+    parser.add_argument("--bump", choices=["minor", "patch"], default="minor", help="Version bump kind to plan/apply.")
     parser.add_argument("--format", choices=["txt", "md"], default="txt", help="Human table format.")
     parser.add_argument("--output", default="", help="Human table output path. Use '-' for stdout.")
     parser.add_argument("--json-output", default="", help="Optional JSON output path.")
@@ -879,12 +901,12 @@ def build_parser() -> argparse.ArgumentParser:
     inventory.add_argument("--fail-on-blocked", action="store_true", help="Exit non-zero if inventory detects blocked bump rows.")
     inventory.set_defaults(func=command_inventory)
 
-    plan = subparsers.add_parser("plan-bump", help="Plan a controlled minor version/tag bump.")
+    plan = subparsers.add_parser("plan-bump", help="Plan a controlled version/tag bump.")
     add_common_arguments(plan)
     plan.add_argument("--pull-first", action="store_true", help="Fetch/pull each clean repo before planning.")
     plan.set_defaults(func=command_plan_bump)
 
-    apply = subparsers.add_parser("apply-bump", help="Apply a reviewed minor version/tag bump.")
+    apply = subparsers.add_parser("apply-bump", help="Apply a reviewed version/tag bump.")
     add_common_arguments(apply)
     apply.add_argument("--yes", action="store_true", help="Required acknowledgement that plan was reviewed.")
     apply.add_argument("--push", action="store_true", help="Push commits and tags after applying.")
