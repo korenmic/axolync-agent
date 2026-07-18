@@ -16,25 +16,29 @@ Claude Code uses a different skills folder (`.claude/skills`) and a different in
 ## Technical Constraints
 
 - Cross-agent bootstrap docs: detect which agent is bootstrapping, then use `.codex/skills` + `$name` for Codex, or `.claude/skills` + `/name` for Claude. Update the README and bootstrap docs to branch on this instead of hardcoding the Codex recipe.
-- Claudify script: hard-copy (not symlink/junction) `skills-workspace` (and any explicitly named `skills-user` skill) into `.claude/skills`, transforming only known-skill `$name` tokens into `/name`.
+- Claudify script: a single Python script `claudify.py` (Python only, cross-platform; no PowerShell variant, to avoid a second source of truth), run by a `claudify` workspace skill. It hard-copies (not symlink/junction) `skills-workspace` (and any explicitly named `skills-user` skill) into `.claude/skills`, transforming only known-skill `$name` tokens into `/name`.
 - The transform must rewrite only invocation tokens that resolve to an actual known skill name. It must never touch other `$` usage: PowerShell `$env:` / `$var`, bash `$1`, regex, or any non-skill `$`.
-- Claudify CI test: run the script into a throwaway temp directory, inventory every transformation performed against the original source, classify each transformation, and fail if any transformation is unclassified or over-reaching. The test must also assert the inventory is complete (zero unclassified entries). An unclassified transformation is a legitimate CI failure and a signal to improve the classifier.
-- Source-skill guardrail test: tracked source skills may use only the canonical `$` prefix for cross-skill calls. The `/`-style invocation must never appear in tracked sources; it may exist only in generated Claude copies.
+- Claudify CI test: run the script into a throwaway temp directory, inventory every transformation performed against the original source, classify each transformation, and fail if any transformation is unclassified or over-reaching. The test must also assert the inventory is complete (zero unclassified entries). An unclassified transformation is a legitimate CI failure and a signal to improve the classifier. This test runs in `axolync-agent` GitHub Actions CI.
+- Source-skill guardrail test: tracked source skills may use only the canonical `$` prefix for cross-skill calls. The `/`-style invocation must never appear in tracked sources; it may exist only in generated Claude copies. This test runs in the same `axolync-agent` CI.
 - Do not install anything into the user-level Claude skills directory except on explicit per-named-skill request, mirroring the existing Codex user-skill policy.
 
 ## Proposed Scope
 
 1. Add agent-detection branching to the skills sections of the README and bootstrap docs.
-2. Add the claudify transform script.
-3. Add the claudify CI test (temp-dir generation + transformation inventory + zero-unclassified assertion).
-4. Add the source-skill single-prefix guardrail test.
+2. Add the claudify transform script (`claudify.py`) and a `claudify` workspace skill that runs it.
+3. Add the claudify CI test (temp-dir generation + transformation inventory + zero-unclassified assertion), running in `axolync-agent` GitHub Actions.
+4. Add the source-skill single-prefix guardrail test, running in the same `axolync-agent` CI.
 
 ## Vocabulary Candidate Additions
 
 - `claudify`: the on-demand generation of Claude-compatible skill copies from the canonical Codex skill sources, hard-copied with a scoped `$name` -> `/name` invocation transform.
+- `claudify.py`: the single cross-platform Python script that performs claudify, run by the `claudify` workspace skill.
+
+## Resolved Decisions
+
+- Script and skill name: a single Python script `claudify.py` (no PowerShell variant), run by a `claudify` workspace skill.
+- CI location: the claudify transformation-inventory test and the source-skill guardrail test both run in `axolync-agent` GitHub Actions, colocated with the skill sources and the transform.
 
 ## Open Questions
 
-- Final name for the script and (if any) the skill that runs it.
-- Where the claudify CI test runs (which repo / which workflow).
-- Whether `skills-user` claudify is strictly per-named-skill, matching the Codex user-skill install policy.
+- When claudify processes the `skills-user` bucket, must it generate a Claude copy only for skills named explicitly, one at a time (never converting the whole user bucket at once) — the same way the Codex bootstrap policy forbids bulk-installing user skills? The `skills-workspace` bucket is always claudified in bulk; this question is only about the `skills-user` bucket.
