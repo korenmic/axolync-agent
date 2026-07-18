@@ -74,6 +74,24 @@ The purpose of `$check-merge-ready` is to produce a clear verdict that prevents 
    - Missing CR without waiver -> `unknown`.
    - Local-only failure -> `not-ready`.
 
+## Manual Human Merge-Gate
+
+Some merge-readiness signals cannot be automated (for example, real audio-streaming playback, and interacting with dynamic or changing UI). For these, the skill must ask the human operator to run the checks and report the result, then fold that result into the verdict.
+
+When manual checks are required, the skill prompts the human to run and report on at least:
+
+- audio-streaming playback works end to end for the affected flow
+- dynamic / changing UI elements respond correctly to interaction on the affected flow
+- any PR-specific or spec-specific manual step the PR or its spec explicitly calls out
+
+Each manual check is recorded as pass, fail, or not-run:
+
+- all required manual checks pass -> manual gate satisfied
+- any required manual check fails -> `not-ready`
+- any required manual check not-run -> `unknown` (never silently assumed passed)
+
+The manual-gate result combines with the automated signals to produce the final verdict. The skill still never merges; it only reports readiness, now including the manual gate.
+
 ## Resolved Decisions
 
 - This skill should block/wait for GitHub Actions when checks are pending.
