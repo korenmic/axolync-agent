@@ -189,8 +189,22 @@ def protected_output_paths(agent_root: Path, workspace: Path) -> set:
     }
 
 
+def protected_output_trees(agent_root: Path, workspace: Path) -> set:
+    """Mutable trees the output dir must never be created inside.
+
+    Writing generated output under a source bucket would pollute the canonical
+    sources and make generation recurse over its own output; writing under the
+    install tree would pollute installed skills.
+    """
+    return {
+        agent_root / "skills-workspace",
+        agent_root / "skills-user",
+        workspace / ".claude" / "skills",
+    }
+
+
 def assert_safe_output_dir(output_dir: Path, agent_root: Path, workspace: Path) -> None:
-    """Refuse an output dir that is, or contains, a protected path (guards rmtree)."""
+    """Refuse an output dir that is, contains, or is inside a protected path (guards rmtree)."""
     out = output_dir.resolve()
     if out.parent == out:
         raise ValueError(f"refusing filesystem root as output dir: {out}")
@@ -200,6 +214,10 @@ def assert_safe_output_dir(output_dir: Path, agent_root: Path, workspace: Path) 
             raise ValueError(f"refusing protected path as output dir: {out}")
         if _is_ancestor(out, pr):
             raise ValueError(f"refusing output dir that contains protected path {pr}: {out}")
+    for tree in protected_output_trees(agent_root, workspace):
+        tr = tree.resolve()
+        if _is_ancestor(tr, out):
+            raise ValueError(f"refusing output dir inside protected tree {tr}: {out}")
 
 
 def _prepare_output_dir(output_dir: Path) -> None:

@@ -119,6 +119,19 @@ class ClaudifyOutputSafetyTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 claudify.generate(ROOT, bad)
 
+    def test_output_inside_protected_tree_is_rejected(self):
+        for bad in [
+            ROOT / "skills-workspace" / "claudify-out",
+            ROOT / "skills-user" / "nested" / "out",
+            ROOT.parent / ".claude" / "skills" / "out",
+        ]:
+            with self.assertRaises(ValueError):
+                claudify.generate(ROOT, bad)
+
+    def test_default_output_dir_is_allowed(self):
+        # The intended default under the agent root must not be rejected.
+        claudify.assert_safe_output_dir(ROOT / ".claudify-out", ROOT, ROOT.parent)
+
     def test_existing_unmarked_dir_is_preserved(self):
         with tempfile.TemporaryDirectory() as tmp:
             target = Path(tmp) / "precious"
