@@ -113,22 +113,34 @@ class ClaudifyGenerationTests(unittest.TestCase):
                     self.assertTrue(gen.is_dir(), f"no generated output for {bucket}/{skill.name}")
 
 
-class ClaudifySourceGuardrailTests(unittest.TestCase):
-    def test_sources_never_use_slash_invocations(self):
-        names = claudify.known_skill_names(ROOT)
-        alt = "|".join(re.escape(n) for n in sorted(names, key=len, reverse=True))
-        # A Claude-style /name invocation would be preceded by start-of-line,
-        # whitespace, or a backtick. Path segments (preceded by a path char) are
-        # excluded, so markdown links and file paths do not false-positive.
-        guard = re.compile(r"(?:^|[\s`])/(?:" + alt + r")(?![A-Za-z0-9-])", re.MULTILINE)
-        offenders = []
-        for bucket, src in source_files():
+class ClaudifyEscapeAndAllowlistTests(unittest.TestCase):
+    def setUp(self):
+        self.names = claudify.known_skill_names(ROOT)
+
+    def test_rogue_slash_invocation_is_escaped_and_reversible(self):
+        text = "Prose mentions /tactic casually; run `$tactic` too."
+        forward = claudify.transform_text(text, self.names)
+        self.assertIn("/ tactic casually", forward)   # rogue neutralized with a space
+        self.assertIn("`/tactic`", forward)            # real invocation converted from $tactic
+        self.assertNotIn("/tactic casually", forward)  # the bare rogue form is gone
+        self.assertEqual(claudify.reverse_text(forward, self.names), text)
+
+    def test_paths_are_not_escaped(self):
+        text = "See skills-user/tactic/SKILL.md for details."
+        self.assertEqual(claudify.transform_text(text, self.names), text)
+
+    def test_per_file_uninventoried_allowlist(self):
+        offenders = {}
+        for _bucket, src in source_files():
             if src.suffix.lower() not in claudify.TRANSFORM_SUFFIXES:
                 continue
-            text = src.read_text(encoding="utf-8")
-            if guard.search(text):
-                offenders.append(str(src.relative_to(ROOT)))
-        self.assertEqual(offenders, [], f"tracked sources use /name invocations: {offenders}")
+            rel = src.relative_to(ROOT).as_posix()
+            _inv, uninv = claudify.partition_candidates(src.read_text(encoding="utf-8"), self.names)
+            allowed = claudify.UNINVENTORIED_ALLOWLIST.get(rel, set())
+            unexpected = sorted(set(uninv) - allowed)
+            if unexpected:
+                offenders[rel] = unexpected
+        self.assertEqual(offenders, {}, f"unexpected uninventoried $-candidates: {offenders}")
 
 
 if __name__ == "__main__":

@@ -33,5 +33,16 @@ Derived from seed `project-seeds/191-p1-claudify-cross-agent-skills.md`.
 - CI runs in `axolync-agent` GitHub Actions.
 - A no-over-reach test proves the transform changes only known-skill invocations: reverse-transforming every generated file reproduces its source byte-for-byte.
 - A coverage test proves every skill in both buckets produces a corresponding generated output, so adding a new skill cannot silently break generation.
-- A source guardrail test proves no tracked source uses a `/name` invocation for a known skill.
 - Any generation failure, over-reach, or missing output is a CI failure.
+
+## R7. Rogue invocation escaping
+
+- Codex sources never intentionally use the Claude `/name` invocation form, so any pre-existing invocation-position `/name` for a known skill is stale/rogue.
+- Claudify neutralizes each such rogue by inserting one space (`/name` -> `/ name`) before converting `$name` -> `/name`, so it cannot trigger a Claude skill.
+- Escaping is scoped to invocation position only; file paths (e.g. `skills-user/queue-status`) are never touched.
+- A test proves rogue escaping happens and stays reversible; the no-over-reach test proves generated output contains no un-escaped rogue.
+
+## R8. Per-file uninventoried allowlist
+
+- Uninventoried `$`-candidates (documentation placeholders such as `$name`) are allowlisted per file.
+- A CI test fails when any uninventoried `$`-candidate appears in a file that does not allow it, so a typo'd or unexpected candidate is surfaced for human review.

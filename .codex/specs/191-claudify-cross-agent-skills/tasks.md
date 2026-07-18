@@ -9,3 +9,5 @@ Derived from `requirements.md` and `design.md` in this spec folder.
 - [x] 5. Add the `claudify` workspace skill (`skills-workspace/claudify/SKILL.md`) that runs the script and echoes the user-skill install offer.
 - [x] 6. Add cross-agent (Codex vs Claude) branching to the skills sections of `README.md` and the bootstrap docs.
 - [x] 7. Verify: run claudify against the real sources and confirm generated output, workspace install, and the printed user-skill offer; run the test suite green.
+- [x] 8. Add rogue-invocation escaping (`/name` -> `/ name`, invocation-position only, run before `$name` conversion) with a reversible transform, plus escape and path-safety tests.
+- [x] 9. Add the per-file uninventoried `$`-candidate allowlist and a CI test that fails on any unexpected uninventoried candidate.

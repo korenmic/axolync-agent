@@ -41,6 +41,16 @@ def known_skill_names(agent_root: Path) -> set[str]:
 CANDIDATE_BODY = r"([A-Za-z0-9][A-Za-z0-9_-]*)"
 DOLLAR_CANDIDATE_RE = re.compile(r"(?<![A-Za-z0-9._/-])\$" + CANDIDATE_BODY)
 SLASH_CANDIDATE_RE = re.compile(r"(?<![A-Za-z0-9._/-])/" + CANDIDATE_BODY)
+# The escaped (neutralized) form of a rogue invocation: "/ name" with one space.
+ESCAPED_SLASH_CANDIDATE_RE = re.compile(r"(?<![A-Za-z0-9._/-])/ " + CANDIDATE_BODY)
+
+# Per-file allowlist of expected uninventoried `$`-candidates: documentation
+# placeholders that are not real invocations. Any uninventoried candidate found in
+# a file that is not listed here is treated as unexpected and fails CI, so a future
+# implementer reviews it (for example, a typo'd skill name).
+UNINVENTORIED_ALLOWLIST = {
+    "skills-workspace/claudify/SKILL.md": {"name"},
+}
 
 
 def transformation_candidates(text: str) -> list[str]:
@@ -61,18 +71,42 @@ def partition_candidates(text: str, names: set[str]) -> tuple[list[str], list[st
     return inventoried, uninventoried
 
 
+def escape_rogue_invocations(text: str, names: set[str]) -> str:
+    """Neutralize pre-existing rogue `/name` invocations for known skills.
+
+    Codex sources never intentionally use the Claude `/name` invocation form, so any
+    invocation-position `/name` for a known skill is stale/rogue. Insert one space
+    (`/name` -> `/ name`) so it cannot trigger a Claude skill. Path-position `/name`
+    (e.g. `skills-user/queue-status`) is excluded by the leading boundary, so file
+    paths are never touched.
+    """
+    def repl(m: "re.Match[str]") -> str:
+        return "/ " + m.group(1) if m.group(1) in names else m.group(0)
+    return SLASH_CANDIDATE_RE.sub(repl, text)
+
+
 def transform_text(text: str, names: set[str]) -> str:
-    """Convert `$name` -> `/name` only for inventoried (known) skills; discard the rest."""
+    """Escape rogue `/name`, then convert `$name` -> `/name` for inventoried skills only.
+
+    Escaping runs first, on the original source (which has no legit `/name`), so it
+    never touches the real `/name` invocations produced by the `$name` conversion.
+    """
+    text = escape_rogue_invocations(text, names)
+
     def repl(m: "re.Match[str]") -> str:
         return "/" + m.group(1) if m.group(1) in names else m.group(0)
     return DOLLAR_CANDIDATE_RE.sub(repl, text)
 
 
 def reverse_text(text: str, names: set[str]) -> str:
-    """Inverse of transform_text: `/name` -> `$name` only for inventoried skills."""
-    def repl(m: "re.Match[str]") -> str:
+    """Inverse of transform_text for tests: undo `$`->`/`, then un-escape `/ name`."""
+    def undo_dollar(m: "re.Match[str]") -> str:
         return "$" + m.group(1) if m.group(1) in names else m.group(0)
-    return SLASH_CANDIDATE_RE.sub(repl, text)
+    text = SLASH_CANDIDATE_RE.sub(undo_dollar, text)
+
+    def undo_escape(m: "re.Match[str]") -> str:
+        return "/" + m.group(1) if m.group(1) in names else m.group(0)
+    return ESCAPED_SLASH_CANDIDATE_RE.sub(undo_escape, text)
 
 
 def claudify_bucket(src_dir: Path, out_dir: Path, names: set[str]) -> int:

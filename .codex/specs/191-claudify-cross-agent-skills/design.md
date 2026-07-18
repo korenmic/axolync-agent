@@ -60,6 +60,23 @@ Defaults:
 - Trigger: push and pull_request.
 - Steps: checkout, set up Python, run `python -m unittest tests.test_claudify -v`.
 
+## Rogue invocation escaping (R7)
+
+- `escape_rogue_invocations(text, names)` inserts a space into any invocation-position `/name` for a known skill (`/name` -> `/ name`), using the same path-safe `SLASH_CANDIDATE_RE`, so file paths are untouched.
+- `transform_text` runs escaping first (on the original source, which has no legit `/name`), then converts `$name` -> `/name`. Order matters: escaping the source first means the real invocations created from `$name` are never escaped.
+- `reverse_text` undoes both steps (`/name` -> `$name`, then `/ name` -> `/name`) so the no-over-reach test still holds.
+- Rationale for zero-provenance-needed: because Codex sources never use `/name` intentionally, every pre-existing `/name` is safe to escape; no need to distinguish innocent-vs-intended.
+
+## Uninventoried allowlist (R8)
+
+- `UNINVENTORIED_ALLOWLIST` is a per-file map of expected uninventoried `$`-candidates (currently `{"skills-workspace/claudify/SKILL.md": {"name"}}`).
+- `test_per_file_uninventoried_allowlist` fails if any file contains an uninventoried `$`-candidate not allowed for that file, surfacing typos/unexpected candidates for review.
+
+## Additional tests
+
+- `test_rogue_slash_invocation_is_escaped_and_reversible`: `/tactic` prose becomes `/ tactic`, `$tactic` becomes `/tactic`, and reverse restores the original.
+- `test_paths_are_not_escaped`: a path like `skills-user/tactic/SKILL.md` passes through unchanged.
+
 ## Gitignore
 
 Add `.claudify-out/` to `.gitignore`.
