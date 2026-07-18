@@ -52,6 +52,26 @@ class ClaudifyTransformUnitTests(unittest.TestCase):
         forward = claudify.transform_text(text, self.names)
         self.assertEqual(claudify.reverse_text(forward, self.names), text)
 
+    def test_partition_splits_candidates_and_only_inventoried_transform(self):
+        text = "Run `$queue-status`; ignore $env, $true, $notaskill."
+        inventoried, uninventoried = claudify.partition_candidates(text, self.names)
+        self.assertIn("queue-status", inventoried)
+        self.assertEqual(set(uninventoried), {"env", "true", "notaskill"})
+        # The transform acts on exactly the inventoried group.
+        out = claudify.transform_text(text, self.names)
+        self.assertIn("/queue-status", out)
+        for discarded in ("$env", "$true", "$notaskill"):
+            self.assertIn(discarded, out)
+
+    def test_partition_of_real_sources_is_consistent(self):
+        for _bucket, src in source_files():
+            if src.suffix.lower() not in claudify.TRANSFORM_SUFFIXES:
+                continue
+            text = src.read_text(encoding="utf-8")
+            inventoried, uninventoried = claudify.partition_candidates(text, self.names)
+            self.assertTrue(set(inventoried) <= self.names)
+            self.assertEqual(set(uninventoried) & self.names, set())
+
 
 class ClaudifyGenerationTests(unittest.TestCase):
     def setUp(self):

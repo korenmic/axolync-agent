@@ -34,26 +34,45 @@ def known_skill_names(agent_root: Path) -> set[str]:
     return names
 
 
-def invocation_pattern(names: set[str], prefix: str) -> re.Pattern[str]:
-    # Longest name first so `queue-status` wins over `queue`.
-    ordered = sorted(names, key=len, reverse=True)
-    alt = "|".join(re.escape(name) for name in ordered)
-    # Leading boundary excludes path/identifier chars so `foo/queue-status`
-    # (a path) is never treated as an invocation; trailing boundary keeps the
-    # match to a whole skill name.
-    return re.compile(
-        r"(?<![A-Za-z0-9._/-])" + re.escape(prefix) + r"(?:" + alt + r")(?![A-Za-z0-9-])"
-    )
+# A transformation candidate is any invocation-shaped token: a prefix character
+# ($ in sources, / in generated copies) followed by an invocation-shaped name.
+# The leading boundary excludes path/identifier characters, so a name inside a
+# file path (e.g. skills-user/queue-status) is never treated as a candidate.
+CANDIDATE_BODY = r"([A-Za-z0-9][A-Za-z0-9_-]*)"
+DOLLAR_CANDIDATE_RE = re.compile(r"(?<![A-Za-z0-9._/-])\$" + CANDIDATE_BODY)
+SLASH_CANDIDATE_RE = re.compile(r"(?<![A-Za-z0-9._/-])/" + CANDIDATE_BODY)
+
+
+def transformation_candidates(text: str) -> list[str]:
+    """Every `$`-prefixed transformation-candidate name found in text, in order."""
+    return [m.group(1) for m in DOLLAR_CANDIDATE_RE.finditer(text)]
+
+
+def partition_candidates(text: str, names: set[str]) -> tuple[list[str], list[str]]:
+    """Split candidates into (inventoried, uninventoried) against the skill inventory.
+
+    This is the single source of truth for the transform: the script converts only
+    the inventoried group, and the tests assert the uninventoried group is discarded.
+    """
+    inventoried: list[str] = []
+    uninventoried: list[str] = []
+    for cand in transformation_candidates(text):
+        (inventoried if cand in names else uninventoried).append(cand)
+    return inventoried, uninventoried
 
 
 def transform_text(text: str, names: set[str]) -> str:
-    pattern = invocation_pattern(names, "$")
-    return pattern.sub(lambda m: "/" + m.group(0)[1:], text)
+    """Convert `$name` -> `/name` only for inventoried (known) skills; discard the rest."""
+    def repl(m: "re.Match[str]") -> str:
+        return "/" + m.group(1) if m.group(1) in names else m.group(0)
+    return DOLLAR_CANDIDATE_RE.sub(repl, text)
 
 
 def reverse_text(text: str, names: set[str]) -> str:
-    pattern = invocation_pattern(names, "/")
-    return pattern.sub(lambda m: "$" + m.group(0)[1:], text)
+    """Inverse of transform_text: `/name` -> `$name` only for inventoried skills."""
+    def repl(m: "re.Match[str]") -> str:
+        return "$" + m.group(1) if m.group(1) in names else m.group(0)
+    return SLASH_CANDIDATE_RE.sub(repl, text)
 
 
 def claudify_bucket(src_dir: Path, out_dir: Path, names: set[str]) -> int:
