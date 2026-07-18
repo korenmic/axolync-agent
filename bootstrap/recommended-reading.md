@@ -4,7 +4,7 @@ This is the shortest self-contained reading order for a new Axolync agent.
 
 ## Hard Rule Before You Commit Anything
 
-- [git-branch-and-seed-commit-policy.md](./git-branch-and-seed-commit-policy.md) — only new seed files go straight to `master`; everything else is branch + PR; merges are human-only.
+- [git-branch-and-seed-commit-policy.md](./git-branch-and-seed-commit-policy.md)
 
 ## Start Here
 

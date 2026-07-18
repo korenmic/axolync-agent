@@ -123,9 +123,7 @@ Safety rules:
 
 ## Git Branch & Seed-Commit Policy
 
-Creating a brand-new seed file is the only commit an agent may make directly to `master`, and only as a single new file under a repo's seed directory. Every other change — spec trios, seed implementations, edits to an existing seed, docs/README/bootstrap changes, skill changes, and fixes — must go on a branch and land through a reviewed pull request. Agents never merge; merging is human-only after the merge-readiness review.
-
-Full rule: [git-branch-and-seed-commit-policy.md](git-branch-and-seed-commit-policy.md).
+Hard rule for direct-to-`master` vs branch + PR, and merge authority: [git-branch-and-seed-commit-policy.md](git-branch-and-seed-commit-policy.md).
 
 ## Git Editor Rule
 
