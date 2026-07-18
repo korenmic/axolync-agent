@@ -2,6 +2,10 @@
 
 Axolync Agent is the shared coordination surface for bootstrapping Axolync coding agents, preserving repo/workspace rules, and publishing workspace-scoped Codex skills.
 
+## Git Workflow Policy
+
+Read before committing: [bootstrap/git-branch-and-seed-commit-policy.md](bootstrap/git-branch-and-seed-commit-policy.md).
+
 ## Skill Buckets
 
 The repo deliberately separates skills by installation scope.

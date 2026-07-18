@@ -121,6 +121,10 @@ Safety rules:
 - do not install, copy, or junction `skills-user/` into the user-level Codex skills directory unless the user explicitly requests a named user-level skill
 - after creating the junction, reload or restart Codex if `$` skill autocomplete does not refresh immediately
 
+## Git Branch & Seed-Commit Policy
+
+Hard rule for direct-to-`master` vs branch + PR, and merge authority: [git-branch-and-seed-commit-policy.md](git-branch-and-seed-commit-policy.md).
+
 ## Git Editor Rule
 
 Before any Git command that might invoke an editor, set a noninteractive `GIT_EDITOR` in the same shell.

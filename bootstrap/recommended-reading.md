@@ -2,6 +2,10 @@
 
 This is the shortest self-contained reading order for a new Axolync agent.
 
+## Hard Rule Before You Commit Anything
+
+- [git-branch-and-seed-commit-policy.md](./git-branch-and-seed-commit-policy.md)
+
 ## Start Here
 
 1. [axolync-builder.bootstrap.md](./axolync-builder.bootstrap.md)
