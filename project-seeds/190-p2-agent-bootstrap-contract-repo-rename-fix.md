@@ -24,13 +24,14 @@ A new agent following the bootstrap prompt would try to bootstrap a nonexistent 
 ## Vocabulary Candidate Additions
 
 - `Contract` (repo `axolync-contract`): the cross-repo contract/schema authority for provider, addon-package, and repo-descriptor interfaces. Replaces the stale `Plugins Contract` / `axolync-plugins-contract` naming.
+- Retain `Plugins Contract` only as a single stale-historical-alias mention, so future agents recognize old references without treating it as a current name.
 
 ## Proposed Change (pre-drafted, approved in principle)
 
-- `axolync.vocabulary.md`: heading `Plugins Contract` -> `Contract`; meaning line broadened to "provider, addon-package, and repo-descriptor interfaces"; `Repo:` `axolync-plugins-contract` -> `axolync-contract`.
+- `axolync.vocabulary.md`: heading `Plugins Contract` -> `Contract`; meaning line broadened to "provider, addon-package, and repo-descriptor interfaces"; `Repo:` `axolync-plugins-contract` -> `axolync-contract`; add one `Aliases / older wording: Plugins Contract` line marked stale.
 - `repo-summaries.md`: `## axolync-plugins-contract` -> `## axolync-contract`.
 - `axolync-builder.bootstrap-prompt.md`: clone-list `axolync-plugins-contract` -> `axolync-contract`.
 
-## Open Questions
+## Resolved Decisions
 
-- Keep `Plugins Contract` as an explicit alias line under the renamed `Contract` vocabulary entry, or drop it entirely? (Seed author leans drop, since the repo never actually carried that name.)
+- `Plugins Contract` is dropped as a primary vocabulary name. Per CRPR review, retain exactly one stale-historical-alias mention under the renamed `Contract` entry (an `Aliases / older wording: Plugins Contract` line) so future agents still recognize old references, without treating it as a current name.
