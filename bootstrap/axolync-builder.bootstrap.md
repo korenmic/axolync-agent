@@ -121,6 +121,12 @@ Safety rules:
 - do not install, copy, or junction `skills-user/` into the user-level Codex skills directory unless the user explicitly requests a named user-level skill
 - after creating the junction, reload or restart Codex if `$` skill autocomplete does not refresh immediately
 
+## Git Branch & Seed-Commit Policy
+
+Creating a brand-new seed file is the only commit an agent may make directly to `master`, and only as a single new file under a repo's seed directory. Every other change — spec trios, seed implementations, edits to an existing seed, docs/README/bootstrap changes, skill changes, and fixes — must go on a branch and land through a reviewed pull request. Agents never merge; merging is human-only after the merge-readiness review.
+
+Full rule: [git-branch-and-seed-commit-policy.md](git-branch-and-seed-commit-policy.md).
+
 ## Git Editor Rule
 
 Before any Git command that might invoke an editor, set a noninteractive `GIT_EDITOR` in the same shell.
