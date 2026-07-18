@@ -20,6 +20,7 @@ from pathlib import Path
 
 TRANSFORM_SUFFIXES = {".md", ".yaml", ".yml"}
 BUCKETS = ("skills-workspace", "skills-user")
+OUTPUT_MARKER = ".claudify-output-marker"
 
 
 def known_skill_names(agent_root: Path) -> set[str]:
@@ -148,10 +149,57 @@ def install_workspace_skills(out_ws_dir: Path, dest_skills_dir: Path) -> int:
     return installed
 
 
-def generate(agent_root: Path, output_dir: Path) -> dict:
-    names = known_skill_names(agent_root)
+def _is_ancestor(parent: Path, child: Path) -> bool:
+    """True if `parent` is an ancestor of (or equal to) `child`."""
+    try:
+        child.resolve().relative_to(parent.resolve())
+        return True
+    except ValueError:
+        return False
+
+
+def protected_output_paths(agent_root: Path, workspace: Path) -> set:
+    """Paths that must never be used or contained as an output directory."""
+    return {
+        agent_root,
+        workspace,
+        Path.home(),
+        agent_root / "skills-workspace",
+        agent_root / "skills-user",
+        workspace / ".claude" / "skills",
+    }
+
+
+def assert_safe_output_dir(output_dir: Path, agent_root: Path, workspace: Path) -> None:
+    """Refuse an output dir that is, or contains, a protected path (guards rmtree)."""
+    out = output_dir.resolve()
+    if out.parent == out:
+        raise ValueError(f"refusing filesystem root as output dir: {out}")
+    for protected in protected_output_paths(agent_root, workspace):
+        pr = protected.resolve()
+        if out == pr:
+            raise ValueError(f"refusing protected path as output dir: {out}")
+        if _is_ancestor(out, pr):
+            raise ValueError(f"refusing output dir that contains protected path {pr}: {out}")
+
+
+def _prepare_output_dir(output_dir: Path) -> None:
+    """Delete + recreate the output dir, but only delete a claudify-owned directory."""
     if output_dir.exists():
+        if any(output_dir.iterdir()) and not (output_dir / OUTPUT_MARKER).exists():
+            raise ValueError(
+                f"refusing to delete existing non-empty output dir without a claudify marker: {output_dir}"
+            )
         shutil.rmtree(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    (output_dir / OUTPUT_MARKER).write_text("claudify output directory; safe to delete\n", encoding="utf-8")
+
+
+def generate(agent_root: Path, output_dir: Path, workspace: "Path | None" = None) -> dict:
+    workspace = workspace if workspace is not None else agent_root.parent
+    assert_safe_output_dir(output_dir, agent_root, workspace)
+    names = known_skill_names(agent_root)
+    _prepare_output_dir(output_dir)
     counts = {}
     for bucket in BUCKETS:
         src = agent_root / bucket
@@ -189,7 +237,7 @@ def main(argv: list[str] | None = None) -> int:
     workspace = Path(args.workspace).resolve() if args.workspace else agent_root.parent
     output_dir = Path(args.output).resolve() if args.output else agent_root / ".claudify-out"
 
-    result = generate(agent_root, output_dir)
+    result = generate(agent_root, output_dir, workspace)
     print(f"claudify: {len(result['names'])} known skills")
     for bucket, count in result["counts"].items():
         print(f"claudify: generated {count} files for {bucket} -> {output_dir / bucket}")

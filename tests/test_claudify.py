@@ -113,6 +113,33 @@ class ClaudifyGenerationTests(unittest.TestCase):
                     self.assertTrue(gen.is_dir(), f"no generated output for {bucket}/{skill.name}")
 
 
+class ClaudifyOutputSafetyTests(unittest.TestCase):
+    def test_protected_output_dirs_are_rejected(self):
+        for bad in [ROOT, ROOT / "skills-workspace", ROOT / "skills-user", ROOT.parent]:
+            with self.assertRaises(ValueError):
+                claudify.generate(ROOT, bad)
+
+    def test_existing_unmarked_dir_is_preserved(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "precious"
+            target.mkdir()
+            keep = target / "keep.txt"
+            keep.write_text("do not delete", encoding="utf-8")
+            with self.assertRaises(ValueError):
+                claudify.generate(ROOT, target)
+            self.assertTrue(keep.exists())
+
+    def test_marked_output_dir_is_regenerated(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "out"
+            claudify.generate(ROOT, target)
+            self.assertTrue((target / claudify.OUTPUT_MARKER).exists())
+            stale = target / "skills-workspace" / "STALE"
+            stale.mkdir(parents=True)
+            claudify.generate(ROOT, target)  # marked -> safe to wipe and regenerate
+            self.assertFalse(stale.exists())
+
+
 class ClaudifyEscapeAndAllowlistTests(unittest.TestCase):
     def setUp(self):
         self.names = claudify.known_skill_names(ROOT)
