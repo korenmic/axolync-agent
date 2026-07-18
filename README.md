@@ -1,5 +1,7 @@
 # Axolync Agent
 
+New agent? Start with the reading order: [bootstrap/recommended-reading.md](bootstrap/recommended-reading.md).
+
 Axolync Agent is the shared coordination surface for bootstrapping Axolync coding agents, preserving repo/workspace rules, and publishing workspace-scoped Codex skills.
 
 ## Git Workflow Policy
