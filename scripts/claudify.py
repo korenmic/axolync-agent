@@ -21,6 +21,7 @@ from pathlib import Path
 TRANSFORM_SUFFIXES = {".md", ".yaml", ".yml"}
 BUCKETS = ("skills-workspace", "skills-user")
 OUTPUT_MARKER = ".claudify-output-marker"
+MANAGED_MARKER = ".claudify-managed"
 
 
 def known_skill_names(agent_root: Path) -> set[str]:
@@ -132,11 +133,28 @@ def claudify_bucket(src_dir: Path, out_dir: Path, names: set[str]) -> int:
     return written
 
 
-def install_workspace_skills(out_ws_dir: Path, dest_skills_dir: Path) -> int:
-    """Replace each workspace skill in dest_skills_dir from generated copies."""
+def install_workspace_skills(out_ws_dir: Path, dest_skills_dir: Path) -> dict:
+    """Install generated workspace skills into dest, pruning stale managed skills.
+
+    Each installed skill gets a MANAGED_MARKER. On every run, previously-managed
+    skills that are no longer generated (renamed/deleted at source) are removed;
+    skills without the marker (manually managed) are always left untouched.
+    """
     if not out_ws_dir.is_dir():
-        return 0
+        return {"installed": 0, "pruned": 0}
     dest_skills_dir.mkdir(parents=True, exist_ok=True)
+    generated = {d.name for d in out_ws_dir.iterdir() if d.is_dir()}
+
+    pruned = 0
+    for existing in sorted(dest_skills_dir.iterdir()):
+        if (
+            existing.is_dir()
+            and (existing / MANAGED_MARKER).exists()
+            and existing.name not in generated
+        ):
+            shutil.rmtree(existing)
+            pruned += 1
+
     installed = 0
     for skill_dir in sorted(out_ws_dir.iterdir()):
         if not skill_dir.is_dir():
@@ -145,8 +163,9 @@ def install_workspace_skills(out_ws_dir: Path, dest_skills_dir: Path) -> int:
         if target.exists():
             shutil.rmtree(target)
         shutil.copytree(skill_dir, target)
+        (target / MANAGED_MARKER).write_text("claudify-managed skill; regenerated each run\n", encoding="utf-8")
         installed += 1
-    return installed
+    return {"installed": installed, "pruned": pruned}
 
 
 def _is_ancestor(parent: Path, child: Path) -> bool:
@@ -244,8 +263,8 @@ def main(argv: list[str] | None = None) -> int:
 
     if not args.no_install:
         dest = workspace / ".claude" / "skills"
-        installed = install_workspace_skills(output_dir / "skills-workspace", dest)
-        print(f"claudify: installed {installed} workspace skills into {dest}")
+        report = install_workspace_skills(output_dir / "skills-workspace", dest)
+        print(f"claudify: installed {report['installed']} workspace skills into {dest} (pruned {report['pruned']} stale)")
     else:
         print("claudify: --no-install set; skipped workspace skill install")
 

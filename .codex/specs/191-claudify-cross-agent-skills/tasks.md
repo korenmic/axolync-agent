@@ -12,4 +12,4 @@ Derived from `requirements.md` and `design.md` in this spec folder.
 - [x] 8. Add rogue-invocation escaping (`/name` -> `/ name`, invocation-position only, run before `$name` conversion) with a reversible transform, plus escape and path-safety tests.
 - [x] 9. Add the per-file uninventoried `$`-candidate allowlist and a CI test that fails on any unexpected uninventoried candidate.
 - [x] 10. (CR) Add a destructive-path guard before deleting the output dir: refuse protected paths (agent root, workspace root, `skills-workspace`, `skills-user`, `.claude/skills`, home, and any ancestor of those) and require a claudify-owned marker before deleting an existing non-empty output dir; add tests.
-- [ ] 11. (CR) Prune stale claudify-managed workspace skills on install: mark managed skills, remove previously-managed ones no longer generated, leave manually-managed skills untouched; add a test.
+- [x] 11. (CR) Prune stale claudify-managed workspace skills on install: mark managed skills, remove previously-managed ones no longer generated, leave manually-managed skills untouched; add a test.

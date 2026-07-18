@@ -140,6 +140,29 @@ class ClaudifyOutputSafetyTests(unittest.TestCase):
             self.assertFalse(stale.exists())
 
 
+class ClaudifyInstallTests(unittest.TestCase):
+    def test_install_prunes_stale_managed_and_keeps_manual(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            out_ws = tmp / "gen"
+            (out_ws / "newskill").mkdir(parents=True)
+            (out_ws / "newskill" / "SKILL.md").write_text("x", encoding="utf-8")
+            dest = tmp / "dest"
+            (dest / "oldskill").mkdir(parents=True)
+            (dest / "oldskill" / claudify.MANAGED_MARKER).write_text("m", encoding="utf-8")
+            (dest / "manualskill").mkdir(parents=True)
+            (dest / "manualskill" / "SKILL.md").write_text("keep", encoding="utf-8")
+
+            report = claudify.install_workspace_skills(out_ws, dest)
+
+            self.assertFalse((dest / "oldskill").exists(), "stale managed skill should be pruned")
+            self.assertTrue((dest / "manualskill").exists(), "manual skill must be left untouched")
+            self.assertTrue((dest / "newskill").exists(), "generated skill should be installed")
+            self.assertTrue((dest / "newskill" / claudify.MANAGED_MARKER).exists())
+            self.assertEqual(report["pruned"], 1)
+            self.assertEqual(report["installed"], 1)
+
+
 class ClaudifyEscapeAndAllowlistTests(unittest.TestCase):
     def setUp(self):
         self.names = claudify.known_skill_names(ROOT)
