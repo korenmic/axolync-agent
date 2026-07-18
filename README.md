@@ -17,6 +17,15 @@ The repo deliberately separates skills by installation scope.
 
 Do not junction or copy the entire historical `skills/` folder. Use only `skills-workspace/` for workspace discovery.
 
+## Cross-Agent Skill Exposure (Codex vs Claude)
+
+Skill sources are authored once in the Codex shape (the `$name` invocation prefix) and exposed differently depending on which agent is bootstrapping:
+
+- Codex: junction `<workspace>\.codex\skills` to `skills-workspace` (see below); skills are invoked as `$name`.
+- Claude: run `scripts/claudify.py` (the `$claudify` workspace skill) to generate Claude-form copies under the gitignored `.claudify-out/`, auto-install the workspace copies into `<workspace>\.claude\skills`, and invoke skills as `/name`. User skills are generated too but are installed globally only by hand.
+
+The Codex `$name` sources stay the single source of truth; claudify produces the Claude copies on demand and never edits the sources.
+
 ## Workspace Skills Junction
 
 A bootstrap agent is allowed to create a workspace-local junction from the workspace root `.codex\skills` directory to this repo's `skills-workspace` directory, as long as both paths remain inside the same workspace.
