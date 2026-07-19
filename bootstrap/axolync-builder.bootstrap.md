@@ -121,6 +121,8 @@ Safety rules:
 - do not install, copy, or junction `skills-user/` into the user-level Codex skills directory unless the user explicitly requests a named user-level skill
 - after creating the junction, reload or restart Codex if `$` skill autocomplete does not refresh immediately
 
+For a Claude agent, do not junction. Run `scripts/claudify.py` (the `$claudify` workspace skill) to generate Claude-form skill copies into the gitignored `.claudify-out/`, auto-install the workspace copies into `<workspaceRoot>\.claude\skills`, and invoke skills as `/name`. User skills are generated but installed globally only by hand. The Codex `$name` sources remain the single source of truth.
+
 ## Git Branch & Seed-Commit Policy
 
 Hard rule for direct-to-`master` vs branch + PR, and merge authority: [git-branch-and-seed-commit-policy.md](git-branch-and-seed-commit-policy.md).
