@@ -64,7 +64,7 @@ Important bootstrap-adjacent doc mirrored here:
 
 - [axolync-addon-whisper.local-dependency-bootstrap-policy.md](./axolync-addon-whisper.local-dependency-bootstrap-policy.md)
 
-## axolync-plugins-contract
+## axolync-contract
 
 Role:
 

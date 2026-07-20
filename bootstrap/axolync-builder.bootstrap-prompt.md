@@ -19,7 +19,7 @@ Hard rules:
 - Then bootstrap these sibling repos as shallow siblings under that same workspace only:
   - `axolync-browser`
   - `axolync-android-wrapper`
-  - `axolync-plugins-contract`
+  - `axolync-contract`
   - `axolync-addon-whisper`
   - `axolync-addon-vibra`
   - `axolync-addon-lrclib`
