@@ -8,6 +8,10 @@ Axolync Agent is the shared coordination surface for bootstrapping Axolync codin
 
 Read before committing: [bootstrap/git-branch-and-seed-commit-policy.md](bootstrap/git-branch-and-seed-commit-policy.md).
 
+## Seed Done-Status
+
+How to mark a seed completed (builder `config/seed-metadata.json` vs the `Status:` line in other repos): [bootstrap/seed-done-status.md](bootstrap/seed-done-status.md).
+
 ## Skill Buckets
 
 The repo deliberately separates skills by installation scope.
