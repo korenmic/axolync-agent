@@ -37,9 +37,10 @@ This file is not a quick-start guide. Use [README.md](README.md) for commands, b
 - **Meaning:** The orchestration repo that builds, validates, inventories, reports, and mirrors artifacts across repos.
 - **Repo:** `axolync-builder`
 
-### Plugins Contract
-- **Meaning:** The cross-repo contract/schema authority for plugin-facing structured interfaces.
-- **Repo:** `axolync-plugins-contract`
+### Contract
+- **Meaning:** The cross-repo contract/schema authority for provider, addon-package, and repo-descriptor interfaces.
+- **Repo:** `axolync-contract`
+- **Aliases / older wording:** `Plugins Contract` (stale historical name; the repo never actually carried it)
 
 ## Plugin Stack Terms
 
