@@ -6,7 +6,7 @@ Axolync Agent is the shared coordination surface for bootstrapping Axolync codin
 
 ## Git Workflow Policy
 
-Read before committing: [bootstrap/git-branch-and-seed-commit-policy.md](bootstrap/git-branch-and-seed-commit-policy.md).
+Read before committing: [bootstrap/git-branch-and-seed-commit-policy.md](bootstrap/git-branch-and-seed-commit-policy.md). It also defines **per-task implementation discipline**: implementing a task ticks its `tasks.md` checkbox in the same commit (one task, one commit) — the TACTIC rule.
 
 ## Seed Done-Status
 

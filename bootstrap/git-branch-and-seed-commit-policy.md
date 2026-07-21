@@ -30,6 +30,20 @@ All other changes must be made on a branch and merged through a pull request:
 
 The implementation of a seed always lives on its own branch, never on `master`.
 
+## Per-Task Implementation Discipline
+
+When implementing a task from a spec `tasks.md` or a backlog list, the commit that
+implements the task MUST also tick that task's checkbox (`- [ ]` -> `- [x]`) in the
+same `tasks.md`, staged in the same commit. A task is not "done" until its checkbox is
+flipped in the same proof commit.
+
+- One task, one commit: do not batch multiple tasks into a single commit.
+- The checkbox flip is part of the proof, not a later cleanup pass.
+- This is the TACTIC discipline (`skills-user/tactic/SKILL.md`, the
+  `T = Tick the completed checkbox in the same proof commit` step). Running TACTIC's
+  per-task loop enforces it automatically; implementing a task outside that loop is
+  exactly where the checkbox flip gets skipped.
+
 ## Merge Is Human-Only
 
 An agent never merges a pull request. Merging is a human action, gated by the project's
