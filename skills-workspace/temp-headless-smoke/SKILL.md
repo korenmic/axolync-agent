@@ -1,6 +1,6 @@
 ---
 name: temp-headless-smoke
-description: "Run temporary, untracked headless-browser smoke tests against a non-default local server, infer relevant checks from the current feature or bug context, clean up the temporary server/scripts, and report tests performed. Use when invoked as $temp-headless-smoke or when the user authorizes temporary headless smoke validation."
+description: "Run temporary, untracked Playwright headless-browser smoke tests against a non-default local Axolync browser server, infer relevant checks from the current feature or bug context, clean up temporary servers/artifacts, and report tests performed. Use when invoked as $temp-headless-smoke or when Codex must visually confirm a browser DOM flow such as SongSearch result rendering and click-through."
 ---
 
 # Temporary Headless Smoke
@@ -32,14 +32,37 @@ When a browser app server is needed, start a temporary server on a non-default p
 
 Track the temporary server process you start and terminate it before finishing the turn. If process cleanup fails, report the PID, port, and attempted cleanup command.
 
-Keep any throwaway headless scripts, screenshots, logs, and scratch data untracked. Remove them before finishing unless the user explicitly asks to keep a specific artifact.
+Keep throwaway screenshots, logs, and scratch data untracked. Remove them before finishing unless the user explicitly asks to keep a specific artifact.
 
 When reporting results, include:
 
 - the temporary port used
 - each temporary headless test performed
-- whether temporary scripts or logs were removed
+- whether temporary scripts or logs were removed or intentionally kept
 - whether the temporary server was killed
+
+## Reusable Script
+
+Use the bundled script for normal Axolync browser smoke flows:
+
+```powershell
+rtk node C:\Users\koren\src\Sinq2\.codex\skills\temp-headless-smoke\scripts\temp-headless-smoke.mjs --browser-root C:\Users\koren\src\Sinq2\axolync-browser
+```
+
+For SongSearch result-panel proof:
+
+```powershell
+rtk node C:\Users\koren\src\Sinq2\.codex\skills\temp-headless-smoke\scripts\temp-headless-smoke.mjs `
+  --browser-root C:\Users\koren\src\Sinq2\axolync-browser `
+  --query "Black Hole Sun" `
+  --active-songsearch-addon axolync-addon-lrclib `
+  --active-songsearch-adapter lrclib-songsearch `
+  --expect-panel `
+  --click-first `
+  --screenshot C:\Users\koren\src\Sinq2\.codex\tmp\temp-headless-smoke-songsearch.png
+```
+
+If addon manifests/packages changed, run browser `predev` first so preinstalled ZIPs are current, then restore accidental generated manifest/version drift before reporting.
 
 ## Scoped Fix And Retest Rule
 
