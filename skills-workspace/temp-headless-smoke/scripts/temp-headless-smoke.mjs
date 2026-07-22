@@ -108,6 +108,22 @@ async function snapshot(page) {
   });
 }
 
+async function waitForRequestedSongSearchBootstrap(consoleMessages) {
+  if (!activeSongSearchAddon) {
+    return { requested: false, observed: true };
+  }
+  const installMarker = `Preinstalled addon install completed (${activeSongSearchAddon})`;
+  const deadlineMs = Date.now() + 20_000;
+  while (Date.now() < deadlineMs) {
+    if (consoleMessages.some((line) => line.includes(installMarker))) {
+      await delay(500);
+      return { requested: true, observed: true, marker: installMarker };
+    }
+    await delay(100);
+  }
+  return { requested: true, observed: false, marker: installMarker };
+}
+
 try {
   await waitForServer();
   const browser = await chromium.launch({ headless: true });
@@ -140,6 +156,10 @@ try {
 
     await page.goto(url, { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('form[data-core-songsearch-form="true"] input[data-core-songsearch-input="true"]', { timeout: 15_000 });
+    const bootstrapWait = await waitForRequestedSongSearchBootstrap(consoleMessages);
+    if (!bootstrapWait.observed) {
+      failures.push(`requested SongSearch addon did not finish bootstrap before query: ${JSON.stringify(bootstrapWait)}`);
+    }
     const before = await snapshot(page);
     if (before.coreFormCount !== 1 || before.coreInputPlaceholder !== 'Search song') {
       failures.push(`core SongSearch form did not render as expected: ${JSON.stringify(before)}`);
@@ -190,6 +210,7 @@ try {
       url,
       query,
       activeSongSearchSelection: activeSongSearchSelection(),
+      bootstrapWait,
       before,
       afterSubmit,
       afterClick,
