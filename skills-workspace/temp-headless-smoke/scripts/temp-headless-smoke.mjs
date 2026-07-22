@@ -171,7 +171,7 @@ try {
       await page.fill('input[data-core-songsearch-input="true"]', query);
       await page.press('input[data-core-songsearch-input="true"]', 'Enter');
       if (expectPanel) {
-        await page.waitForSelector('[data-songsearch-results-panel="true"]', { timeout: 20_000 });
+        await page.waitForSelector('[data-songsearch-results-panel="true"]', { state: 'attached', timeout: 20_000 });
       } else {
         await page.waitForFunction(() => {
           const status = document.querySelector('#status-bar .status-pill')?.textContent?.trim() ?? '';
