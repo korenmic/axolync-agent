@@ -1,26 +1,31 @@
-# Seed 194: Natural-Language Agnostic Skill Deployment via README Phrase
+# Seed 194: `deploy-skills` — Userspace Skill Deployment Skill (README-bootstrappable)
 
 Priority: P2
 Repo: axolync-agent
 
 ## Summary
 
-Add a README-documented natural-language flow: when the user says a canonical phrase (e.g. "deploy skills agnostically to the project"), the currently running agent (Claude or Codex) installs the agent's userspace pipeline skills into the correct skill directory for whichever agent is running — with no separate installer binary.
+Add a skill named `deploy-skills` that deploys this repo's userspace skills (`skills-user/`) into the userspace of whichever agent is currently running. It is authored Codex-first as `$deploy-skills` and claudified to `/deploy-skills`. The same procedure is also documented in the README as a natural-language flow (a canonical trigger phrase), so an agent can perform the deployment by reading the README *before* the skill itself is installed — a pre-skill bootstrap concept that becomes a real skill once deployed.
 
 ## Product Context
 
-Redeploying the reusable pipeline skills (`skills-user/`) to a new project currently requires manual junctioning and/or running claudify. The user wants a zero-extra-tooling flow driven entirely from the README: read a documented trigger phrase, and the AI deploys the agnostic userspace skills for its own runtime — Claude into `.claude/skills`, Codex into `.codex/skills` — scoped to the target project. This makes the agent repo instantly redeployable on a new machine without bootstrapping an axolync-specific sibling system.
+Redeploying the reusable pipeline skills to a new machine or project is currently manual. `claudify` already covers one axis — transforming the Codex `$name` sources into the Claude shape and installing the *workspace* copies — but there is no single path that installs the *userspace* skills for whichever agent is running. That leaves a bootstrap hole: on a fresh environment nothing can be deployed until something is already deployed.
+
+`deploy-skills` closes that hole from both ends: as a documented README procedure any agent can execute cold, and as an installed skill afterwards. The two mechanisms compose rather than overlap — `claudify` owns the Codex→Claude shape transform and workspace exposure; `deploy-skills` owns userspace deployment and delegates the Claude shape to `claudify` instead of duplicating that logic.
 
 ## Technical Constraints
 
-- Document a canonical trigger phrase and the exact deployment procedure in the agent README (and/or a dedicated bootstrap doc).
-- The procedure must detect the running agent (Claude vs Codex) and deploy the `skills-user/` skills into that agent's skill directory in the target project only.
-- Reuse existing mechanisms: `scripts/claudify.py` for the Claude shape; junction/copy for the Codex shape. No new compiled installer binary.
-- Deploy only `skills-user/` (the agnostic core) by default, not `skills-workspace/` (axolync-specific), unless explicitly asked.
-- Must not write into user-global skill directories unless the user explicitly asks; default scope is the target project/workspace.
-- Preserve the existing Codex `$name` sources as the single source of truth.
+- Skill name is `deploy-skills`, invoked as `$deploy-skills` (Codex source of truth) and `/deploy-skills` after claudify.
+- Deploys `skills-user/` only. `skills-workspace/` is out of scope; workspace exposure stays owned by the workspace junction and `claudify`.
+- Default target is the userspace of the agent currently running: Codex to the user Codex skills directory, Claude to the user Claude skills directory. Detect the running agent rather than asking.
+- Support an explicit opt-in to deploy both agent shapes in one run, but never do both silently by default.
+- Reuse `scripts/claudify.py` to produce the Claude shape; do not reimplement the transform.
+- Deploy the whole `skills-user/` bucket together, never individual skill folders: skills reference each other by sibling-relative script paths (for example `enqueue` invokes `queue-status`'s script), so a partial copy breaks at runtime.
+- The README procedure and the installed skill must produce the same result, so an agent that bootstraps cold ends up in the same state as one that runs the skill.
+- The Codex `$name` sources remain the single source of truth; deployment never edits them.
+- Do not write outside the resolved userspace target unless the user explicitly asks.
 
 ## Open Questions
 
-- Should the phrase deploy both agent shapes (Claude + Codex) or only the running agent's shape? Recommended: only the running agent's shape by default, with an option to do both.
-- Is a tiny helper script acceptable as optional backing for the NL steps, or must it be purely natural-language + existing claudify? Recommended: NL steps + reuse claudify; keep any helper optional and thin.
+- May a thin helper script back the natural-language steps, or must the flow stay pure natural language plus the existing `claudify`? Recommended: allow an optional thin helper, but keep the README procedure sufficient on its own.
+- On redeploy, should existing skill folders be overwritten idempotently or skipped when present? Recommended: overwrite idempotently, since the repo is the source of truth.
