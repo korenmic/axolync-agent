@@ -26,6 +26,7 @@ const activeSongSearchAddon = readArg('active-songsearch-addon', null);
 const activeSongSearchAdapter = readArg('active-songsearch-adapter', null);
 const expectPanel = hasFlag('expect-panel');
 const clickFirst = hasFlag('click-first');
+const clickCandidateIndex = Number.parseInt(readArg('click-candidate-index', '0'), 10);
 const screenshotPath = readArg('screenshot', null);
 const url = `http://127.0.0.1:${Number.isFinite(port) ? port : 5288}/`;
 
@@ -185,8 +186,9 @@ try {
         failures.push(`expected SongSearch result candidates, got ${JSON.stringify(afterSubmit)}`);
       }
       if (clickFirst) {
-        const firstCandidate = page.locator('button[data-songsearch-candidate-key]').first();
-        await firstCandidate.click({ timeout: 10_000 });
+        const targetIndex = Number.isFinite(clickCandidateIndex) && clickCandidateIndex >= 0 ? clickCandidateIndex : 0;
+        const targetCandidate = page.locator('button[data-songsearch-candidate-key]').nth(targetIndex);
+        await targetCandidate.click({ timeout: 10_000 });
         await page.waitForFunction(() => {
           const status = document.querySelector('#status-bar .status-pill')?.textContent?.trim() ?? '';
           return /detected/i.test(status);
@@ -211,6 +213,7 @@ try {
       query,
       activeSongSearchSelection: activeSongSearchSelection(),
       bootstrapWait,
+      clickCandidateIndex: clickFirst ? clickCandidateIndex : null,
       before,
       afterSubmit,
       afterClick,

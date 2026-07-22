@@ -59,8 +59,11 @@ rtk node C:\Users\koren\src\Sinq2\.codex\skills\temp-headless-smoke\scripts\temp
   --active-songsearch-adapter lrclib-songsearch `
   --expect-panel `
   --click-first `
+  --click-candidate-index 1 `
   --screenshot C:\Users\koren\src\Sinq2\.codex\tmp\temp-headless-smoke-songsearch.png
 ```
+
+Use `--click-candidate-index` with `--click-first` when the intended proof target is not the first visible result, for example when Manual fallback renders before provider-backed SongSearch results.
 
 If addon manifests/packages changed, run browser `predev` first so preinstalled ZIPs are current, then restore accidental generated manifest/version drift before reporting.
 
