@@ -2,6 +2,16 @@
 
 New agent? Start with the reading order: [bootstrap/recommended-reading.md](bootstrap/recommended-reading.md).
 
+## Deploying Skills
+
+Three deployment skills install this repo's skills. They are readable procedures — a cold agent can execute them straight from these files BEFORE any skill is installed, and gets the same result as running the installed skill:
+
+- [`skills-user/deploy-userspace-skills/SKILL.md`](skills-user/deploy-userspace-skills/SKILL.md) — deploy the whole `skills-user/` bucket into the running agent's userspace (Codex or Claude, auto-detected).
+- [`skills-user/deploy-workspace-skills/SKILL.md`](skills-user/deploy-workspace-skills/SKILL.md) — expose `skills-workspace/` to the current workspace (Codex junction / Claude claudify output).
+- [`skills-user/deploy-skills/SKILL.md`](skills-user/deploy-skills/SKILL.md) — umbrella: both of the above, always both scopes.
+
+Invoked as `$deploy-skills` / `$deploy-userspace-skills` / `$deploy-workspace-skills` (Codex) or the `/name` forms (Claude) once installed.
+
 Axolync Agent is the shared coordination surface for bootstrapping Axolync coding agents, preserving repo/workspace rules, and publishing workspace-scoped Codex skills.
 
 ## Git Workflow Policy
