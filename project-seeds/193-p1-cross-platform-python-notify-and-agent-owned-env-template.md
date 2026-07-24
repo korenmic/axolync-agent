@@ -31,5 +31,4 @@ After this seed, the agent repo is the single source of truth and the userspace 
 
 ## Open Questions
 
-- Use stdlib `urllib` only for the POST, or allow `requests` if present? Recommended: stdlib `urllib` only, for zero-dependency portability.
-- Should `agent-home` also be usable by future skills that need per-agent paths (generic), or stay notify-scoped in wording? Recommended: generic wording; it is a reusable primitive.
+None — resolved: stdlib `urllib` only (zero-dependency portability); `agent-home` is worded as a generic reusable primitive, not notify-scoped.
