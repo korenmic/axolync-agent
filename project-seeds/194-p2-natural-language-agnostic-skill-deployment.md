@@ -32,5 +32,4 @@ Explicit, separately named skills are preferred over a single skill with a scope
 
 ## Open Questions
 
-- Should `deploy-skills` accept a scope override, or always do both? Recommended: always both; use the specific skill when a narrower scope is wanted.
-- On redeploy, overwrite existing skill folders idempotently or skip when present? Recommended: overwrite idempotently, since the repo is the source of truth.
+None — resolved: `deploy-skills` always deploys both scopes (use the specific skill for a narrower scope); redeploy overwrites existing skill folders idempotently, since the repo is the source of truth.
