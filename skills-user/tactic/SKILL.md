@@ -156,6 +156,17 @@ Do not defer task-boundary commits with the intention of reconstructing them lat
 
 If the run drifts into a multi-task dirty state, immediately enter TACTIC Integrity Recovery and restore truthful commit boundaries before continuing.
 
+## Known Bypasses
+
+These are the exact thoughts that precede skipping TACTIC. If you notice yourself
+forming one of them, that thought IS the failure. Proceed with TACTIC anyway.
+
+- "This is docs-only, TACTIC is overkill here."
+- "I'll implement everything now and tick the checkboxes at the end."
+
+Task simplicity is never a qualifying exception. The per-task loop is cheapest
+exactly when the task is small.
+
 ## Handle Blockers
 
 In `autonomous` mode:

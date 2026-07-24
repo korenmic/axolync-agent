@@ -15,6 +15,8 @@ Implement all undone enqueued tasks using $tactic, $notify on each task's start,
 
 This skill must not replace or reinterpret TACTIC. TACTIC remains responsible for task execution, verification, one-task-one-commit boundaries, blocker handling, and integrity recovery.
 
+There is no non-TACTIC implementation path. `$implement` never implements tasks itself and never hand-rolls a "simpler" route: every task goes through `$tactic`, regardless of how small, mechanical, or docs-only it looks.
+
 ## Do Not Use For
 
 - CRPR review
@@ -27,7 +29,7 @@ This skill must not replace or reinterpret TACTIC. TACTIC remains responsible fo
 
 1. Resolve the current workspace and active queue.
 2. Warn if relevant worktrees are dirty.
-3. Invoke `$tactic` for the intended undone enqueued tasks.
+3. Invoke `$tactic` for the intended undone enqueued tasks. Mandatory; no alternative branch.
 4. Preserve all TACTIC rules, including per-task commits.
 5. Push committed work to the agreed/current/master branch as context dictates.
 6. For PR-targeted pushes, run the PR CI regression gate after the push and before ready handoff.
