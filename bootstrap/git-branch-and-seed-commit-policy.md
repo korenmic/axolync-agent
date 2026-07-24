@@ -18,6 +18,21 @@ Rules for the exception:
 - Seed commits are "launch and forget": the seed is a proposal for later review, not implemented work.
 - Implementing a seed's tasks never qualifies — implementation always lives on its own branch and PR.
 
+## Catalog Cut-And-Paste Exception (Seeds Graduating From A Catalog)
+
+Catalog repos (for example `axolync-songsearch-adapters`) hold candidate entries that
+graduate into real seeds in their destined repos. Graduating a candidate does NOT use
+the direct-to-master seed exception. It is a two-PR cut-and-paste flow:
+
+1. A PR in the catalog repo removing the candidate entry (the "cut").
+2. A PR in the destination repo adding the seed file (the "paste"), opened as a PR,
+   not committed to master.
+
+Both PRs go through normal review/merge. The rest of the lifecycle (s2s, enqueue,
+implement) proceeds from the destination repo only after its paste PR is merged.
+Rationale: graduation changes two repos at once and retires catalog truth, so both
+sides deserve a review gate even though the payload is a seed.
+
 ## Everything Else Goes Through a Branch and PR
 
 All other changes must be made on a branch and merged through a pull request:
