@@ -4,18 +4,19 @@ This is a hard workflow rule for Axolync agents. It defines the single case wher
 commit may land directly on `master`, and requires everything else to go through a
 branch and a reviewed pull request.
 
-## The One Direct-To-Master Exception
+## The Direct-To-Master Exception: Seed Creation And Seed Hardening
 
-Creating a brand-new feature seed file is the only thing an agent may commit directly
-to `master`, and only as a single new file under a repo's seed directory
+Seed work — creating a new seed file, or hardening/editing an existing seed file — is
+committed directly to `master`, always under a repo's seed directory
 (for example `axolync-agent/project-seeds/` or `axolync-builder/docs/project-seeds/`).
+Only seed IMPLEMENTATION goes through a branch and PR.
 
 Rules for the exception:
 
-- It applies to creating a NEW seed file only.
-- One new seed file per direct-to-master commit.
-- Editing an existing seed, or changing any other file in the same commit, does not qualify.
+- It applies to seed files only: creating a new seed, or hardening/editing an existing one.
+- One seed file per direct-to-master commit; no non-seed files in the same commit.
 - Seed commits are "launch and forget": the seed is a proposal for later review, not implemented work.
+- Implementing a seed's tasks never qualifies — implementation always lives on its own branch and PR.
 
 ## Everything Else Goes Through a Branch and PR
 
@@ -23,7 +24,6 @@ All other changes must be made on a branch and merged through a pull request:
 
 - spec trios (`requirements.md`, `design.md`, `tasks.md`)
 - implementations of a seed's tasks
-- edits to an existing seed
 - documentation, README, and bootstrap-doc changes
 - skill additions or edits
 - fixes of any kind
