@@ -7,9 +7,9 @@ description: Send concise progress notifications for active work sessions and ta
 
 ## Overview
 
-Use this skill to prepare the human-readable notification text and send it through the global `notify` CLI.
+Use this skill to prepare the human-readable notification text and send it through the bundled cross-platform CLI, `notify.py` — the only notify implementation. It ships inside this skill folder and runs anywhere Python 3 runs.
 
-Treat the CLI as the transport layer with bot-name prefix support. Compose the message body in the agent, let the CLI resolve/prefix the bot name, and then call `notify` to deliver it.
+Treat the CLI as the transport layer with bot-name prefix support. Compose the message body in the agent, let the CLI resolve/prefix the bot name, and invoke it via the composed per-agent path (see Use The CLI).
 
 ## Resolve The Defaults
 
@@ -18,7 +18,9 @@ Resolve notification settings in this order:
 1. Explicit CLI channel argument or bot-name argument
 2. `AXOLYNC_NOTIFY_*` values from the current process environment
 3. The nearest ancestor `.env` that actually defines the specific notify setting being resolved
-4. `~/bin/notify-config.json`
+4. Legacy `notify-config.json` (the skill/script directory first, then `~/bin/notify-config.json`, back-compat only)
+5. The agent repo root `.env.template` defaults
+6. Built-in defaults (`https://ntfy.sh`, bot `Codex`)
 
 Recognized settings:
 
@@ -34,21 +36,7 @@ Example:
 - workspace root `.env` contains `AXOLYNC_NOTIFY_BOT_NAME=Sinq4`
 - running `notify` inside the repo should still send as `Sinq4`
 
-Default global config path:
-
-- `~/bin/notify-config.json`
-
-Default config shape:
-
-```json
-{
-  "baseUrl": "https://ntfy.sh",
-  "channel": "miki800_done",
-  "botName": "Codex"
-}
-```
-
-Use `Codex` when no bot name override is present.
+The agent-owned defaults live in the agent repo root `.env.template` (base URL, channel, bot name). Copy it to a `.env` at a workspace or repo root to override; never edit the template per-machine. Use `Codex` when no bot name override is present.
 
 ## Compose Messages
 
@@ -71,11 +59,13 @@ Rules:
 
 ## Use The CLI
 
-Send notifications with the global CLI on `PATH`:
+Resolve the running agent's home via the `$agent-home` skill, then invoke the deployed script by full path — there is no PATH-name dependency and no `~/bin` involvement:
 
-```powershell
-notify "<message body>" [channel] [taskNumber] [duration] [botName]
+```text
+python <agent-home>/skills/notify/notify.py "<message body>" [channel] [taskNumber] [duration] [botName]
 ```
+
+(`<agent-home>` is `~/.codex` under Codex and `~/.claude` under Claude. When working inside the agent repo itself, `skills-user/notify/notify.py` is the same script.)
 
 Notes:
 
@@ -83,7 +73,7 @@ Notes:
 - The channel argument is optional and overrides the configured/default channel.
 - `taskNumber` and `duration` are compatibility helpers; prefer putting the final session summary into the message itself.
 - The optional `botName` argument overrides env/config/default bot naming for that one notification.
-- For the shortest custom-name override, you may pass `@Name` as the second argument instead of a channel, for example `notify "<message body>" @Sinq2`.
+- For the shortest custom-name override, you may pass `@Name` as the second argument instead of a channel, for example `python <agent-home>/skills/notify/notify.py "<message body>" @Sinq2`.
 - The CLI resolves each notify setting from the nearest ancestor `.env` that actually defines that setting, so a workspace-level `.env` can still provide `AXOLYNC_NOTIFY_BOT_NAME` when a nested repo `.env` exists but does not define notify settings.
 
 ## Default Events

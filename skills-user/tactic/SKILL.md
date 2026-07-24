@@ -186,7 +186,7 @@ When deferring work, update `blockedTaskIds`, `dependencyDeferrals`, and `recent
 
 ## Notify Progress
 
-Use the global `notify` skill and the `notify` CLI for session visibility.
+Use the `notify` skill's bundled `notify.py` for session visibility, invoked by full path via the `agent-home` skill: `python <agent-home>/skills/notify/notify.py "<message>" ...`.
 
 Default notification events:
 
@@ -209,7 +209,7 @@ Rules:
 - `finish` must report the final counts truthfully.
 - After every completed-task notification, the task should already be committed.
 
-Resolve the bot name from `AXOLYNC_NOTIFY_BOT_NAME`, then `~/bin/notify-config.json`, then `Codex`.
+Resolve the bot name through the notify skill's resolution chain (`AXOLYNC_NOTIFY_BOT_NAME` env, nearest ancestor `.env`, legacy config, agent-repo `.env.template`), defaulting to `Codex`.
 
 ## Stop Conditions
 
